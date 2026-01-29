@@ -1,0 +1,91 @@
+﻿@model IEnumerable<HotelBookingManager.DataAccess.Models.Payment>
+
+@{
+    ViewData["Title"] = "Danh sách thanh toán";
+}
+
+<h2 class="mb-3">💳 Danh sách Payments</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Chưa có payment nào.</div>
+}
+else
+{
+    <div class="table-responsive shadow-sm">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>Mã GD</th>
+                    <th>Số tiền</th>
+                    <th>Phương thức</th>
+                    <th>Trạng thái</th>
+                    <th>Phòng</th>
+                    <th>Khách</th>
+                    <th width="180">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.TransactionCode</td>
+
+                        <td class="text-end">
+                            @item.Amount.ToString("N0") VNĐ
+                        </td>
+
+                        <td class="text-center">
+                            <span class="badge bg-primary">@item.Method</span>
+                        </td>
+
+                        <td class="text-center">
+                            @if (item.Status == "Success")
+                            {
+                                <span class="badge bg-success">Success</span>
+                            }
+                            else if (item.Status == "Pending")
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">@item.Status</span>
+                            }
+                        </td>
+
+                        <td>@(item.Booking?.Room?.RoomNumber ?? "N/A")</td>
+                        <td>@(item.User?.Email ?? "N/A")</td>
+
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+
+                                <!-- Ai cũng xem được chi tiết -->
+                                <a asp-action="Details"
+                                   asp-route-id="@item.PaymentId"
+                                   class="btn btn-info">
+                                    Chi tiết
+                                </a>
+
+                                <!-- 🔐 CHỈ STAFF hoặc ADMIN mới xử lý CASH PENDING -->
+                                @if (
+                                                        (User.IsInRole("Staff") || User.IsInRole("Admin"))
+                                                        && item.Method == "Cash"
+                                                        && item.Status == "Pending"
+                                                        )
+                                {
+                                    <a asp-action="Pay"
+                                       asp-route-paymentId="@item.PaymentId"
+                                       class="btn btn-success">
+                                        Thu tiền
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

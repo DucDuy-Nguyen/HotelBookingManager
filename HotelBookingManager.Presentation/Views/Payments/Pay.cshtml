@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Thanh toán";
+}
+
+<h2>Thanh toán</h2>
+
+<div class="card">
+    <div class="card-body">
+        <p><strong>Booking:</strong> @ViewBag.BookingInfo</p>
+        <p><strong>Số tiền:</strong> @ViewBag.Amount.ToString("N0") VNĐ</p>
+        <form asp-action="Pay" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="paymentId" value="@ViewBag.PaymentId" />
+
+            <select name="method" class="form-control">
+                <option value="VNPay">VNPay</option>
+                <option value="MoMo">MoMo</option>
+                <option value="Cash">Tiền mặt</option>
+            </select>
+
+            <button type="submit" class="btn btn-success">
+                Thanh toán
+            </button>
+        </form>
+
+    </div>
+</div>

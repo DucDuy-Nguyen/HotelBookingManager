@@ -1,0 +1,64 @@
+﻿@model HotelBookingManager.Presentation.Models.VerifyOtpViewModel
+
+@{
+    ViewData["Title"] = "Xác minh OTP đăng ký";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-lg-5">
+                    <h3 class="text-center mb-2 text-primary fw-semibold">
+                        Xác minh OTP đăng ký
+                    </h3>
+                    <p class="text-center text-muted mb-3">
+                        Mã OTP xác minh tài khoản đã được gửi tới email:
+                    </p>
+                    <p class="text-center mb-4">
+                        <strong>@Model.Email</strong>
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyRegisterOtp" method="post">
+                        <input type="hidden" asp-for="Email" />
+
+                        <div class="mb-3">
+                            <label asp-for="OtpCode" class="form-label">Nhập mã OTP</label>
+                            <input asp-for="OtpCode"
+                                   class="form-control form-control-lg"
+                                   placeholder="Nhập mã gồm các chữ số được gửi tới email" />
+                            <span asp-validation-for="OtpCode" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mt-2">
+                            Xác minh
+                        </button>
+                    </form>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a asp-action="Register" class="text-decoration-none">
+                            ← Đăng ký lại
+                        </a>
+                        <a asp-action="Login" class="text-decoration-none">
+                            Đã có tài khoản? Đăng nhập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,45 @@
+﻿@model HotelBookingManager.DataAccess.Models.Room
+
+<h2>Thêm phòng</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Khách sạn</label>
+        <select asp-for="HotelId" class="form-select" asp-items="ViewBag.HotelId"></select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Loại phòng</label>
+        <select asp-for="RoomTypeId" class="form-select" asp-items="ViewBag.RoomTypeId"></select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Số phòng</label>
+        <input asp-for="RoomNumber" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tầng</label>
+        <input asp-for="Floor" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Giá hiện tại</label>
+        <input asp-for="CurrentPrice" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Trạng thái</label>
+        <input asp-for="Status" class="form-control" />
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label"></label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

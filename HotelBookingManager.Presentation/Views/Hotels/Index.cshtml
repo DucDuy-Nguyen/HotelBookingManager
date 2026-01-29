@@ -1,0 +1,88 @@
+﻿@model HotelBookingManager.Presentation.Models.HotelSearchViewModel
+
+<h2>Danh sách khách sạn</h2>
+
+<form method="get" asp-action="Index">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text"
+                   name="city"
+                   value="@Model.City"
+                   class="form-control"
+                   placeholder="Tìm theo thành phố" />
+        </div>
+
+        <div class="col-md-3">
+            <select name="statusFilter" class="form-select">
+                <option value="active"
+                        selected="@(Model.StatusFilter == "active")">
+                    Chỉ Active
+                </option>
+                <option value="inactive"
+                        selected="@(Model.StatusFilter == "inactive")">
+                    Chỉ Inactive
+                </option>
+                <option value="all"
+                        selected="@(Model.StatusFilter == "all")">
+                    Cả hai
+                </option>
+            </select>
+        </div>
+
+        <div class="col-md-5">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a asp-action="Create" class="btn btn-success ms-2">Thêm khách sạn</a>
+        </div>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tên</th>
+            <th>Địa chỉ</th>
+            <th>Thành phố</th>
+            <th>Quốc gia</th>
+            <th>Rating</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var h in Model.Hotels)
+        {
+            <tr>
+                <td>@h.Name</td>
+                <td>@h.Address</td>
+                <td>@h.City</td>
+                <td>@h.Country</td>
+                <td>@h.Rating</td>
+                <td>@h.IsActive</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@h.HotelId"
+                       class="btn btn-info btn-sm">Chi tiết</a>
+
+                    <a asp-action="Edit" asp-route-id="@h.HotelId"
+                       class="btn btn-warning btn-sm">Sửa</a>
+
+                    <a asp-action="Delete" asp-route-id="@h.HotelId"
+                       class="btn btn-danger btn-sm">Xóa</a>
+
+                    <a asp-controller="Rooms" asp-action="ByHotel"
+                       asp-route-hotelId="@h.HotelId"
+                       asp-route-onlyAvailable="true"
+                       class="btn btn-sm btn-primary mt-1">
+                        Phòng còn trống
+                    </a>
+
+                    <a asp-controller="Rooms" asp-action="ByHotel"
+                       asp-route-hotelId="@h.HotelId"
+                       asp-route-onlyAvailable="false"
+                       class="btn btn-sm btn-secondary mt-1">
+                        Tất cả phòng
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
