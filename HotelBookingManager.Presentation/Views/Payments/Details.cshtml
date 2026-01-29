@@ -1,4 +1,4 @@
-﻿@model HotelBookingManager.DataAccess.Models.Payment
+﻿@model HotelBookingManager.BusinessObjects.DTO.PaymentDto
 
 @{
     ViewData["Title"] = "Chi tiết thanh toán";
@@ -32,10 +32,10 @@
             <dd class="col-sm-10">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
 
             <dt class="col-sm-2">Booking</dt>
-            <dd class="col-sm-10">@Model.Booking?.Status</dd>
+            <dd class="col-sm-10">@Model.BookingId</dd>
 
             <dt class="col-sm-2">User</dt>
-            <dd class="col-sm-10">@Model.User?.Email</dd>
+            <dd class="col-sm-10">@Model.UserId</dd>
         </dl>
     </div>
 </div>

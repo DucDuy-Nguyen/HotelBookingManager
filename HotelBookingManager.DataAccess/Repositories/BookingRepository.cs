@@ -12,7 +12,15 @@ namespace HotelBookingManager.DataAccess.Repositories
         {
             _context = context;
         }
-
+        public async Task<IEnumerable<Booking>> GetByUserAsync(int userId)
+        {
+            return await _context.Bookings
+                .Include(b => b.Hotel)
+                .Include(b => b.Room)
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.CheckInDate)
+                .ToListAsync();
+        }
         public async Task<IEnumerable<Booking>> GetAllAsync()
         {
             return await _context.Bookings

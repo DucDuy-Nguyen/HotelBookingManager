@@ -11,6 +11,7 @@ namespace HotelBookingManager.BusinessObjects.IService
         Task<int> CreateAsync(BookingDto booking);
 
         Task ChangeStatusAsync(int bookingId, string newStatus);
+        Task<IEnumerable<BookingDto>> GetByUserAsync(int userId);
 
 
     }

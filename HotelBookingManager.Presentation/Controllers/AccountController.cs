@@ -5,7 +5,6 @@ using HotelBookingManager.Presentation.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Security.Claims;
 
 namespace HotelBookingManager.Presentation.Controllers
@@ -18,17 +17,17 @@ namespace HotelBookingManager.Presentation.Controllers
         public AccountController(IAuthService authService, IEmailSender emailSender)
         {
             _authService = authService;
-            _emailSender = emailSender; 
-
+            _emailSender = emailSender;
         }
 
-        [HttpGet]
+        // GET: /Account/Login
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
+        // POST: /Account/Login
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -46,20 +45,20 @@ namespace HotelBookingManager.Presentation.Controllers
 
             await SignInUser(user);
 
-
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
 
             return RedirectToAction("Index", "Home");
         }
 
-
+        // GET: /Account/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View(new RegisterViewModel());
         }
 
+        // POST: /Account/Register
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -96,8 +95,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction("VerifyRegisterOtp");
         }
 
-
-
+        // GET: /Account/VerifyRegisterOtp
         [HttpGet]
         public IActionResult VerifyRegisterOtp()
         {
@@ -108,6 +106,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(new VerifyOtpViewModel { Email = email });
         }
 
+        // POST: /Account/VerifyRegisterOtp
         [HttpPost]
         public async Task<IActionResult> VerifyRegisterOtp(VerifyOtpViewModel model)
         {
@@ -130,42 +129,14 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-
-
-
-
-
-
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Home");
-        }
-
-        private async Task SignInUser(UserDto user)
-        {
-            var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-        new Claim(ClaimTypes.Name, user.FullName),
-        new Claim(ClaimTypes.Email, user.Email),
-        new Claim(ClaimTypes.Role, (user.RoleId ?? 3).ToString())
-    };
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-        }
-
-
-
-
+        // GET: /Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View(new ForgotPasswordViewModel());
         }
 
+        // POST: /Account/ForgotPassword
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -178,6 +149,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction("VerifyResetOtp");
         }
 
+        // GET: /Account/VerifyResetOtp
         [HttpGet]
         public IActionResult VerifyResetOtp()
         {
@@ -188,6 +160,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(new VerifyResetOtpViewModel { Email = email });
         }
 
+        // POST: /Account/VerifyResetOtp
         [HttpPost]
         public async Task<IActionResult> VerifyResetOtp(VerifyResetOtpViewModel model)
         {
@@ -205,6 +178,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction("ResetPassword");
         }
 
+        // GET: /Account/ResetPassword
         [HttpGet]
         public IActionResult ResetPassword()
         {
@@ -215,6 +189,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(new ResetPasswordViewModel { Email = email });
         }
 
+        // POST: /Account/ResetPassword
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -231,7 +206,38 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction("Login");
         }
 
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
+        }
 
+        
+        private async Task SignInUser(UserDto user)
+        {
+            var roleId = user.RoleId ?? 3;
 
+            var claims = new List<Claim>
+            {
+                new Claim("UserId", user.UserId.ToString()),                  
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()), 
+
+                new Claim(ClaimTypes.Name,  string.IsNullOrWhiteSpace(user.FullName) ? user.Email : user.FullName),
+                new Claim(ClaimTypes.Email, user.Email),
+
+                new Claim(ClaimTypes.Role, roleId.ToString())
+                
+            };
+
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal);
+        }
     }
 }

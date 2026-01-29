@@ -1,0 +1,55 @@
+﻿@model HotelBookingManager.Presentation.Models.FeedbackCreateViewModel
+
+@{
+    ViewData["Title"] = "Gửi đánh giá";
+}
+
+<h2>Gửi đánh giá</h2>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Feedback.UserId)
+
+    <div class="mb-3">
+        <label class="form-label">Khách sạn</label>
+        <select asp-for="Feedback.HotelId"
+                asp-items="@(new SelectList(Model.Hotels, "HotelId", "Name"))"
+                class="form-select">
+            <option value="">-- Chọn khách sạn --</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Booking</label>
+        <select asp-for="Feedback.BookingId"
+                asp-items="@(new SelectList(Model.Bookings, "BookingId", "BookingId"))"
+                class="form-select">
+            <option value="">-- Chọn booking --</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Đánh giá (1–5)</label>
+        <input asp-for="Feedback.Rating"
+               class="form-control"
+               type="number" min="1" max="5" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Nhận xét</label>
+        @Html.TextAreaFor(m => m.Feedback.Comment,
+        new { @class = "form-control", rows = 4 })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+</form>

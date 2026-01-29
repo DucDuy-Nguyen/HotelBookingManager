@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HotelBookingManager.DataAccess.Models.Booking>
+﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.BookingDto>
 
 @{
     ViewData["Title"] = "Quản lý booking";
@@ -27,9 +27,9 @@
     <thead class="table-light">
         <tr>
             <th>Booking #</th>
-            <th>Khách</th>
-            <th>Khách sạn</th>
-            <th>Phòng</th>
+            <th>Khách (UserId)</th>
+            <th>Khách sạn (HotelId)</th>
+            <th>Phòng (RoomId)</th>
             <th>Check-in</th>
             <th>Check-out</th>
             <th>Tổng tiền</th>
@@ -43,106 +43,15 @@
         {
             <tr>
                 <td>@b.BookingId</td>
-                <td>@b.User?.FullName</td>
-                <td>@b.Hotel?.Name</td>
-                <td>@b.Room?.RoomNumber</td>
+                <td>@b.UserId</td>
+                <td>@b.HotelId</td>
+                <td>@b.RoomId</td>
                 <td>@b.CheckInDate.ToString("dd/MM/yyyy")</td>
                 <td>@b.CheckOutDate.ToString("dd/MM/yyyy")</td>
                 <td>@b.TotalPrice.ToString("N0")</td>
                 <td>@b.Status</td>
-
-                @* CỘT TRẠNG THÁI THANH TOÁN *@
-                <td>
-                    @{
-                        var payment = b.Payments?
-                        .OrderByDescending(p => p.CreatedAt)
-                        .FirstOrDefault();
-
-                        var isPaid = payment?.Status == "Success";
-                        var isCashPending = payment?.Method == "Cash" && payment?.Status == "Pending";
-
-                    }
-
-
-                    @if (isPaid)
-                    {
-                        <span class="badge bg-success">Đã thanh toán</span>
-                    }
-                    else if (isCashPending)
-                    {
-                        <span class="badge bg-warning text-dark">Chờ thu tiền mặt</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Chưa thanh toán</span>
-                    }
-
-                </td>
-
-
-                @* CỘT THAO TÁC *@
-                <td>
-                    <div class="btn-group" role="group">
-
-                        @* Thanh toán *@
-                        @if (b.Status == "Confirmed" && payment == null)
-                        {
-                            <a asp-controller="Payments"
-                               asp-action="Pay"
-                               asp-route-bookingId="@b.BookingId"
-                               class="btn btn-sm btn-primary">
-                                Thanh toán
-                            </a>
-                        }
-
-                        @* @if (b.Status != "Paid" && b.Status != "Cancelled" && !isPaid)
-                        {
-                            <a asp-controller="Payments"
-                               asp-action="Pay"
-                               asp-route-bookingId="@b.BookingId"
-                               class="btn btn-sm btn-primary">
-                                Thanh toán
-                            </a>
-                        } *@
-
-
-
-
-
-                        @* Check-in *@
-                        @if (b.Status == "Confirmed" && isPaid)
-                        {
-                            <form asp-action="ChangeStatus" method="post" class="d-inline">
-                                <input type="hidden" name="id" value="@b.BookingId" />
-                                <input type="hidden" name="newStatus" value="CheckedIn" />
-                                <button class="btn btn-sm btn-success">Check-in</button>
-                            </form>
-                        }
-                        @* Check-out *@
-                        @if (b.Status == "CheckedIn")
-                        {
-                            <form asp-action="ChangeStatus" method="post" class="d-inline">
-                                <input type="hidden" name="id" value="@b.BookingId" />
-                                <input type="hidden" name="newStatus" value="Completed" />
-                                <button type="submit" class="btn btn-sm btn-warning">
-                                    Check-out
-                                </button>
-                            </form>
-                        }
-
-
-
-                        @* Cancel *@
-                        @if (b.Status == "Pending" || b.Status == "Confirmed")
-                        {
-                            <form asp-action="ChangeStatus" method="post" class="d-inline">
-                                <input type="hidden" name="id" value="@b.BookingId" />
-                                <input type="hidden" name="newStatus" value="Cancelled" />
-                                <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
-                            </form>
-                        }
-                    </div>
-                </td>
+                
+                
 
             </tr>
         }

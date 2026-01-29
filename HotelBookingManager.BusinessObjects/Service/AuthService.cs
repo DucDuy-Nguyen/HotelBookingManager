@@ -38,6 +38,7 @@ namespace HotelBookingManager.BusinessObjects.Services
             };
         }
 
+
         // LOGIN
         public async Task<UserDto?> ValidateUserAsync(string login, string password)
         {

@@ -44,6 +44,9 @@ builder.Services.AddScoped<IHotelService, HotelService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
 // ===== ĐĂNG KÝ AUTH + EMAIL + CACHE =====
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();

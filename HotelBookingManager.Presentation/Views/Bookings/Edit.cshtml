@@ -1,4 +1,4 @@
-﻿@model HotelBookingManager.DataAccess.Models.Booking
+﻿@model HotelBookingManager.BusinessObjects.DTO.BookingDto
 
 @{
     ViewData["Title"] = "Edit";
@@ -47,11 +47,6 @@
                 <label asp-for="Status" class="control-label"></label>
                 <input asp-for="Status" class="form-control" />
                 <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedAt" class="control-label"></label>
-                <input asp-for="CreatedAt" class="form-control" />
-                <span asp-validation-for="CreatedAt" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

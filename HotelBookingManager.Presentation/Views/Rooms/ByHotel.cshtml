@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HotelBookingManager.DataAccess.Models.Room>
+﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.RoomDto>
 
 @{
     bool onlyAvailable = ViewBag.OnlyAvailable ?? true;
@@ -12,11 +12,9 @@
         <tr>
             <th>Số phòng</th>
             <th>Tầng</th>
-            <th>Khách sạn</th>
-            <th>Loại phòng</th>
+            <th>HotelId</th>
+            <th>Loại phòng (Id)</th>
             <th>Giá hiện tại</th>
-            <th>Tối đa người lớn</th>
-            <th>Tối đa trẻ em</th>
             <th>Trạng thái</th>
         </tr>
     </thead>
@@ -26,11 +24,9 @@
             <tr>
                 <td>@room.RoomNumber</td>
                 <td>@room.Floor</td>
-                <td>@room.Hotel?.Name</td>
-                <td>@room.RoomType?.Name</td>
+                <td>@room.HotelId</td>
+                <td>@room.RoomTypeId</td>
                 <td>@room.CurrentPrice.ToString("N0")</td>
-                <td>@room.RoomType?.MaxAdults</td>
-                <td>@room.RoomType?.MaxChildren</td>
                 <td>@room.Status</td>
             </tr>
         }

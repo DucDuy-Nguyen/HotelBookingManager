@@ -34,7 +34,11 @@ namespace HotelBookingManager.BusinessObjects.Service
             Status = b.Status,
             TotalPrice = b.TotalPrice
         };
-
+        public async Task<IEnumerable<BookingDto>> GetByUserAsync(int userId)
+        {
+            var list = await _bookingRepository.GetByUserAsync(userId);
+            return list.Select(ToDto);
+        }
         private static Booking ToEntity(BookingDto dto) => new Booking
         {
             BookingId = dto.BookingId,

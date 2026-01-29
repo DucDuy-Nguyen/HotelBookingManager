@@ -11,6 +11,7 @@ namespace HotelBookingManager.DataAccess.IRepositories
         Task AddAsync(Booking booking);
         void Update(Booking booking);
         void Delete(Booking booking);
+        Task<IEnumerable<Booking>> GetByUserAsync(int userId);   
 
         Task<int> SaveChangesAsync();
     }

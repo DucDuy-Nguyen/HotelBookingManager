@@ -1,0 +1,34 @@
+﻿@model HotelBookingManager.BusinessObjects.DTO.FeedbackDto
+
+@{
+    ViewData["Title"] = "Chi tiết feedback";
+}
+
+<h2>Chi tiết feedback</h2>
+
+<dl class="row">
+    <dt class="col-sm-2">Hotel</dt>
+    <dd class="col-sm-10">@Model.HotelName</dd>
+
+    <dt class="col-sm-2">Khách</dt>
+    <dd class="col-sm-10">@Model.CustomerName</dd>
+
+    <dt class="col-sm-2">Phòng</dt>
+    <dd class="col-sm-10">@Model.RoomNumber</dd>
+
+    <dt class="col-sm-2">Rating</dt>
+    <dd class="col-sm-10">
+        @for (int i = 1; i <= 5; i++)
+        {
+            <span style="color:@(i <= Model.Rating ? "#ffc107" : "#ccc")">★</span>
+        }
+    </dd>
+
+    <dt class="col-sm-2">Comment</dt>
+    <dd class="col-sm-10">@Model.Comment</dd>
+
+    <dt class="col-sm-2">Created</dt>
+    <dd class="col-sm-10">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+</dl>
+
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

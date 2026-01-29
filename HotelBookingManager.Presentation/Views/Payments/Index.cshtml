@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HotelBookingManager.DataAccess.Models.Payment>
+﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.PaymentDto>
 
 @{
     ViewData["Title"] = "Danh sách thanh toán";
@@ -55,20 +55,20 @@ else
                             }
                         </td>
 
-                        <td>@(item.Booking?.Room?.RoomNumber ?? "N/A")</td>
-                        <td>@(item.User?.Email ?? "N/A")</td>
+                        
+                        <td>@(item.RoomNumber ?? "N/A")</td>
+                        <td>@(item.CustomerName ?? "N/A")</td>
+
 
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
 
-                                <!-- Ai cũng xem được chi tiết -->
                                 <a asp-action="Details"
                                    asp-route-id="@item.PaymentId"
                                    class="btn btn-info">
                                     Chi tiết
                                 </a>
 
-                                <!-- 🔐 CHỈ STAFF hoặc ADMIN mới xử lý CASH PENDING -->
                                 @if (
                                                         (User.IsInRole("Staff") || User.IsInRole("Admin"))
                                                         && item.Method == "Cash"

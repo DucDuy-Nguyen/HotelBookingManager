@@ -1,4 +1,4 @@
-﻿@model HotelBookingManager.DataAccess.Models.Booking
+﻿@model HotelBookingManager.BusinessObjects.DTO.BookingDto
 
 @{
     ViewData["Title"] = "Delete";
@@ -36,28 +36,16 @@
             @Html.DisplayFor(model => model.Status)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
+            @Html.DisplayNameFor(model => model.TotalPrice)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
+            @Html.DisplayFor(model => model.TotalPrice)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
+            @Html.DisplayNameFor(model => model.Status)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Hotel)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Hotel.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Room)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Room.RoomNumber)
+            @Html.DisplayFor(model => model.Status)
         </dd>
     </dl>
     

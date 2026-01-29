@@ -1,0 +1,54 @@
+﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.FeedbackDto>
+<a asp-action="Create" class="btn btn-success mb-3">
+    Thêm feedback
+</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Hotel</th>
+            <th>Khách</th>
+            <th>Phòng</th>
+            <th>Rating</th>
+            <th>Comment</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.HotelName</td>
+                <td>@item.CustomerName</td>
+                <td>@item.RoomNumber</td>
+                <td>@item.Rating</td>
+                <td>@item.Comment</td>
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@item.FeedbackId"
+                       class="btn btn-sm btn-info me-1">
+                        Chi tiết
+                    </a>
+                    
+
+                    <a asp-action="Edit"
+                       asp-route-id="@item.FeedbackId"
+                       class="btn btn-sm btn-warning me-1">
+                        Sửa
+                    </a>
+
+                    <form asp-action="Delete"
+                          asp-route-id="@item.FeedbackId"
+                          method="post"
+                          class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="btn btn-sm btn-danger"
+                                onclick="return confirm('Xoá feedback này?');">
+                            Xóa
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,4 +1,4 @@
-﻿@model HotelBookingManager.DataAccess.Models.Payment
+﻿@model HotelBookingManager.BusinessObjects.DTO.PaymentDto
 
 @{
     ViewData["Title"] = "Kết quả thanh toán";
@@ -34,10 +34,12 @@
                         <div class="col-md-6">
                             <p>
                                 <strong>Trạng thái:</strong>
-                                <span class="badge @(Model.Status == "Success" ? "bg-success" : "bg-danger")">@Model.Status</span>
+                                <span class="badge @(Model.Status == "Success" ? "bg-success" : "bg-danger")">
+                                    @Model.Status
+                                </span>
                             </p>
                             <p><strong>Thời gian:</strong> @Model.PaidAt?.ToString("dd/MM/yyyy HH:mm")</p>
-                            <p><strong>Phòng:</strong> @(Model.Booking?.Room?.RoomNumber ?? "N/A")</p>
+                            <p><strong>Phòng:</strong> @(Model.RoomNumber ?? "N/A")</p>
                         </div>
                     </div>
                 </div>
@@ -52,7 +54,6 @@
                        class="btn btn-primary">
                         Quay lại danh sách
                     </a>
-
                 }
                 else
                 {
@@ -68,15 +69,13 @@
                     {
                         <h2 class="text-danger">THANH TOÁN THẤT BẠI</h2>
                     }
+
                     <a asp-controller="Bookings"
                        asp-action="Index"
                        asp-route-status="All"
                        class="btn btn-primary">
                         Quay lại danh sách
                     </a>
-
-
-
                 }
             </div>
         </div>

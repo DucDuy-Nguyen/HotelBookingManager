@@ -1,0 +1,28 @@
+﻿@model HotelBookingManager.BusinessObjects.DTO.FeedbackDto
+
+@{
+    ViewData["Title"] = "Sửa feedback";
+}
+
+<h2>Sửa feedback</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.FeedbackId)
+    @Html.HiddenFor(m => m.BookingId)
+    @Html.HiddenFor(m => m.HotelId)
+    @Html.HiddenFor(m => m.UserId)
+
+    <div class="mb-3">
+        <label class="form-label">Rating (1–5)</label>
+        <input asp-for="Rating" class="form-control" type="number" min="1" max="5" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Comment</label>
+        @Html.TextAreaFor(m => m.Comment, new { @class = "form-control", rows = 4 })
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Huỷ</a>
+</form>

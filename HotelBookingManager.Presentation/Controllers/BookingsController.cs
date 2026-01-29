@@ -2,6 +2,7 @@
 using HotelBookingManager.BusinessObjects.IService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace HotelBookingManager.Presentation.Controllers
@@ -61,7 +62,16 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(booking);
         }
 
+        private int? GetCurrentUserId()
+        {
+            if (!User.Identity?.IsAuthenticated ?? true)
+                return null;
 
+            var userIdStr = User.FindFirst("UserId")?.Value
+                            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            return int.TryParse(userIdStr, out var id) ? id : (int?)null;
+        }
         // POST: Bookings/Create  ⭐⭐⭐ CHỖ SỬA DUY NHẤT
         [HttpPost]
         public async Task<IActionResult> Create(BookingDto booking)
@@ -76,8 +86,9 @@ namespace HotelBookingManager.Presentation.Controllers
                 await LoadDropdownsAsync(booking.HotelId, booking.RoomId);
                 return View(booking);
             }
+            var userId = GetCurrentUserId();
 
-            booking.UserId = 1; // sau này lấy từ user login
+            booking.UserId = userId.Value;
 
             var bookingId = await _bookingService.CreateAsync(booking);
 
