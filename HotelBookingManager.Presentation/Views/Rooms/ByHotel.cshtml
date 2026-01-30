@@ -5,55 +5,94 @@
     int hotelId = ViewBag.HotelId;
 }
 
-<h2>Danh sách phòng (@(onlyAvailable ? "còn trống" : "tất cả"))</h2>
+<h4 class="mb-3">
+    🛏️ Danh sách phòng
+    <span class="badge bg-success">@(onlyAvailable ? "Còn trống" : "Tất cả")</span>
+</h4>
 
-<table class="table table-bordered mt-3">
-    <thead>
-        <tr>
-            <th>Số phòng</th>
-            <th>Tầng</th>
-            <th>HotelId</th>
-            <th>Loại phòng (Id)</th>
-            <th>Giá hiện tại</th>
-            <th>Trạng thái</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var room in Model)
-        {
-            <tr>
-                <td>@room.RoomNumber</td>
-                <td>@room.Floor</td>
-                <td>@room.HotelId</td>
-                <td>@room.RoomTypeId</td>
-                <td>@room.CurrentPrice.ToString("N0")</td>
-                <td>@room.Status</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<div class="mt-3">
-    <a asp-controller="Hotels" asp-action="Index" class="btn btn-secondary">
-        Quay lại danh sách khách sạn
-    </a>
-
-    @if (onlyAvailable)
-    {
-        <a asp-action="ByHotel"
-           asp-route-hotelId="@hotelId"
-           asp-route-onlyAvailable="false"
-           class="btn btn-outline-primary ms-2">
-            Xem tất cả phòng
-        </a>
-    }
-    else
-    {
+<div class="mb-3">
+    <div class="btn-group" role="group">
         <a asp-action="ByHotel"
            asp-route-hotelId="@hotelId"
            asp-route-onlyAvailable="true"
-           class="btn btn-outline-primary ms-2">
-            Chỉ phòng còn trống
+           class="btn @(onlyAvailable ? "btn-success" : "btn-outline-success")">
+            Chỉ Available
         </a>
-    }
+
+        <a asp-action="ByHotel"
+           asp-route-hotelId="@hotelId"
+           asp-route-onlyAvailable="false"
+           class="btn @(onlyAvailable ? "btn-outline-primary" : "btn-primary")">
+            Tất cả phòng
+        </a>
+    </div>
 </div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        Không có phòng phù hợp
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Số phòng</th>
+                    <th>Tầng</th>
+                    <th>Loại</th>
+                    <th>Giá / đêm</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var room in Model)
+                {
+                    <tr class="@(room.Status == "Available" ? "table-success" : "")">
+                        <td class="fw-bold">@room.RoomNumber</td>
+                        <td>@room.Floor</td>
+                        <td>@room.RoomTypeId</td>
+                        <td class="fw-bold text-success">
+                            @room.CurrentPrice.ToString("N0") VNĐ
+                        </td>
+                        <td>
+                            @if (room.Status == "Available")
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@room.Status</span>
+                            }
+                        </td>
+                        <td>
+                            @if (room.Status == "Available")
+                            {
+                                <a asp-controller="Bookings"
+                                   asp-action="Create"
+                                   asp-route-roomId="@room.RoomId"
+                                   asp-route-hotelId="@hotelId"
+                                   class="btn btn-primary">
+                                    Đặt phòng
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-secondary" disabled>
+                                    Không khả dụng
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<a asp-controller="Hotels" asp-action="Index" class="btn btn-outline-secondary mt-3">
+    ← Quay lại khách sạn
+</a>

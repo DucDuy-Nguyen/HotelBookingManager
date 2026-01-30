@@ -41,24 +41,31 @@ else
                         </td>
 
                         <td class="text-center">
-                            @if (item.Status == "Success")
-                            {
-                                <span class="badge bg-success">Success</span>
+                            @{
+                                var status = item.Status;
+                                var badgeClass = "bg-secondary";
+
+                                if (status == "Success" || status == "Paid")
+                                {
+                                    badgeClass = "bg-success"; // 🟢
+                                }
+                                else if (status == "Pending")
+                                {
+                                    badgeClass = "bg-warning text-dark"; // 🟡
+                                }
+                                else
+                                {
+                                    badgeClass = "bg-danger"; // 🔴
+                                }
                             }
-                            else if (item.Status == "Pending")
-                            {
-                                <span class="badge bg-warning text-dark">Pending</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">@item.Status</span>
-                            }
+
+                            <span class="badge @badgeClass">
+                                @status
+                            </span>
                         </td>
 
-                        
                         <td>@(item.RoomNumber ?? "N/A")</td>
                         <td>@(item.CustomerName ?? "N/A")</td>
-
 
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">

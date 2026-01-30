@@ -33,15 +33,27 @@
 
     <div class="mb-3">
         <label class="form-label">Check-in</label>
-        <input asp-for="CheckInDate" class="form-control" type="date" />
+        <input asp-for="CheckInDate"
+               id="checkIn"
+               class="form-control"
+               type="date"
+               min="@DateTime.Today.ToString("yyyy-MM-dd")"
+               required />
         <span asp-validation-for="CheckInDate" class="text-danger"></span>
     </div>
 
+
     <div class="mb-3">
         <label class="form-label">Check-out</label>
-        <input asp-for="CheckOutDate" class="form-control" type="date" />
+        <input asp-for="CheckOutDate"
+               id="checkOut"
+               class="form-control"
+               type="date"
+               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
+               required />
         <span asp-validation-for="CheckOutDate" class="text-danger"></span>
     </div>
+
 
     <button type="submit" class="btn btn-primary">Lưu</button>
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>

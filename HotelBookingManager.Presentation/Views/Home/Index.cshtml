@@ -6,6 +6,28 @@
     <div class="container">
         <div class="row align-items-center gy-4">
 
+
+
+
+            <!-- Search form trên Home -->
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <form asp-controller="Hotels" asp-action="Index" method="get" class="row g-3">
+                        <div class="col-md-5">
+                            <input type="text" name="city" class="form-control" placeholder="Nhập TP Hồ Chí Minh, Hà Nội..." value="@ViewBag.SearchCity" />
+                        </div>
+                        <div class="col-md-3">
+                            <select name="statusFilter" class="form-select">
+                                <option value="active" selected>Tất cả (active)</option>
+                                <option value="inactive">Không active</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Tìm khách sạn</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             <!-- Hero text -->
             <div class="col-lg-6">
                 <h1 class="display-5 fw-bold text-primary mb-3">
@@ -35,6 +57,8 @@
                     </a>
                 }
             </div>
+
+
 
             <!-- Features -->
             <div class="col-lg-6">

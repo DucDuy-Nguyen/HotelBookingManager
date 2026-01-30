@@ -1,4 +1,9 @@
 ﻿@model HotelBookingManager.Presentation.Models.HotelSearchViewModel
+@using System.Security.Claims
+@{
+    var roleClaim = User.FindFirst("RoleId")?.Value;
+    var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
+}
 
 <h2>Danh sách khách sạn</h2>
 
@@ -14,16 +19,13 @@
 
         <div class="col-md-3">
             <select name="statusFilter" class="form-select">
-                <option value="active"
-                        selected="@(Model.StatusFilter == "active")">
+                <option value="active" selected="@(Model.StatusFilter == "active")">
                     Chỉ Active
                 </option>
-                <option value="inactive"
-                        selected="@(Model.StatusFilter == "inactive")">
+                <option value="inactive" selected="@(Model.StatusFilter == "inactive")">
                     Chỉ Inactive
                 </option>
-                <option value="all"
-                        selected="@(Model.StatusFilter == "all")">
+                <option value="all" selected="@(Model.StatusFilter == "all")">
                     Cả hai
                 </option>
             </select>
@@ -31,7 +33,11 @@
 
         <div class="col-md-5">
             <button class="btn btn-primary" type="submit">Search</button>
-            <a asp-action="Create" class="btn btn-success ms-2">Thêm khách sạn</a>
+
+            @if (isAdminOrStaff)
+            {
+                <a asp-action="Create" class="btn btn-success ms-2">Thêm khách sạn</a>
+            }
         </div>
     </div>
 </form>
@@ -59,22 +65,26 @@
                 <td>@h.Rating</td>
                 <td>@h.IsActive</td>
                 <td>
+                    <!-- Public -->
                     <a asp-action="Details" asp-route-id="@h.HotelId"
                        class="btn btn-info btn-sm">Chi tiết</a>
 
-                    <a asp-action="Edit" asp-route-id="@h.HotelId"
-                       class="btn btn-warning btn-sm">Sửa</a>
+                    <!-- Admin/Staff ONLY (RoleId 1,2) -->
+                    @if (isAdminOrStaff)
+                    {
+                        <a asp-action="Edit" asp-route-id="@h.HotelId"
+                           class="btn btn-warning btn-sm">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@h.HotelId"
+                           class="btn btn-danger btn-sm">Xóa</a>
+                    }
 
-                    <a asp-action="Delete" asp-route-id="@h.HotelId"
-                       class="btn btn-danger btn-sm">Xóa</a>
-
+                    <!-- Public -->
                     <a asp-controller="Rooms" asp-action="ByHotel"
                        asp-route-hotelId="@h.HotelId"
                        asp-route-onlyAvailable="true"
                        class="btn btn-sm btn-primary mt-1">
                         Phòng còn trống
                     </a>
-
                     <a asp-controller="Rooms" asp-action="ByHotel"
                        asp-route-hotelId="@h.HotelId"
                        asp-route-onlyAvailable="false"

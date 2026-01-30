@@ -1,10 +1,13 @@
 ﻿using HotelBookingManager.BusinessObjects.DTO;
 using HotelBookingManager.BusinessObjects.IService;
 using HotelBookingManager.Presentation.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HotelBookingManager.Presentation.Controllers
 {
+    [Authorize]  // Cần login
     public class HotelsController : Controller
     {
         private readonly IHotelService _hotelService;
@@ -14,12 +17,19 @@ namespace HotelBookingManager.Presentation.Controllers
             _hotelService = hotelService;
         }
 
-        // GET: /Hotels
+        // Helper: Check RoleId 1(Admin) hoặc 2(Staff)
+        private bool IsAdminOrStaff()
+        {
+            var roleClaim = User.FindFirst("RoleId")?.Value;
+            return int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
+        }
+
+        // Public: ai cũng xem
+        [AllowAnonymous]
         public async Task<IActionResult> Index(string? city, string? statusFilter)
         {
             statusFilter ??= "active";
-
-            var hotels = await _hotelService.GetFilteredAsync(city, statusFilter); // IEnumerable<HotelDto>
+            var hotels = await _hotelService.GetFilteredAsync(city, statusFilter);
 
             var model = new HotelSearchViewModel
             {
@@ -29,13 +39,10 @@ namespace HotelBookingManager.Presentation.Controllers
                 {
                     HotelId = h.HotelId,
                     Name = h.Name,
-                    Description = h.Description,
                     Address = h.Address,
                     City = h.City,
                     Country = h.Country,
                     Rating = (decimal?)h.Rating,
-                    PhoneNumber = h.PhoneNumber,
-                    Email = h.Email,
                     IsActive = h.IsActive
                 }).ToList()
             };
@@ -43,11 +50,10 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(model);
         }
 
-
-        // GET: /Hotels/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            var hotel = await _hotelService.GetByIdAsync(id); // HotelDto?
+            var hotel = await _hotelService.GetByIdAsync(id);
             if (hotel == null) return NotFound();
 
             var model = new HotelViewModel
@@ -67,17 +73,18 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(model);
         }
 
-        // GET
+        // ADMIN/STAFF ONLY (RoleId 1,2)
         public IActionResult Create()
         {
+            if (!IsAdminOrStaff()) return Forbid();
             return View();
         }
 
-        // POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(HotelViewModel model)
         {
+            if (!IsAdminOrStaff()) return Forbid();
             if (!ModelState.IsValid) return View(model);
 
             var hotelDto = new HotelDto
@@ -97,11 +104,10 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-        // GET
         public async Task<IActionResult> Edit(int id)
         {
-            var hotel = await _hotelService.GetByIdAsync(id); // HotelDto?
+            if (!IsAdminOrStaff()) return Forbid();
+            var hotel = await _hotelService.GetByIdAsync(id);
             if (hotel == null) return NotFound();
 
             var model = new HotelViewModel
@@ -121,11 +127,11 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(model);
         }
 
-        // POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, HotelViewModel model)
         {
+            if (!IsAdminOrStaff()) return Forbid();
             if (id != model.HotelId) return BadRequest();
             if (!ModelState.IsValid) return View(model);
 
@@ -149,11 +155,10 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
-        // GET: /Hotels/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var hotel = await _hotelService.GetByIdAsync(id); // HotelDto?
+            if (!IsAdminOrStaff()) return Forbid();
+            var hotel = await _hotelService.GetByIdAsync(id);
             if (hotel == null) return NotFound();
 
             var model = new HotelViewModel
@@ -173,16 +178,13 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(model);
         }
 
-
-        // POST: /Hotels/Delete/5
-        // XÓA MỀM: IsActive = false
-       [HttpPost, ActionName("Delete")]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> DeleteConfirmed(int id)
-{
-    await _hotelService.DeleteAsync(id);
-    return RedirectToAction(nameof(Index));
-}
-
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (!IsAdminOrStaff()) return Forbid();
+            await _hotelService.DeleteAsync(id);
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

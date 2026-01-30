@@ -1,4 +1,6 @@
-﻿@{
+﻿@model HotelBookingManager.DataAccess.Models.Payment
+
+@{
     ViewData["Title"] = "Thanh toán";
 }
 
@@ -6,25 +8,24 @@
 
 <div class="card">
     <div class="card-body">
-        <p><strong>Booking:</strong> @ViewBag.BookingInfo</p>
-        <p><strong>Số tiền:</strong> @ViewBag.Amount.ToString("N0") VNĐ</p>
+        <p><strong>Mã booking:</strong> @Model.BookingId</p>
+        <p><strong>Số tiền:</strong> @Model.Amount.ToString("N0") VNĐ</p>
 
         <form asp-action="Pay" method="post">
             @Html.AntiForgeryToken()
-
-            <input type="hidden" name="paymentId" value="@ViewBag.PaymentId" />
+            <input type="hidden" name="paymentId" value="@Model.PaymentId" />
 
             <div class="mb-3">
                 <label class="form-label">Phương thức</label>
-                <select name="method" class="form-select">
-                    <option value="VNPay">VNPay</option>
-                    <option value="MoMo">MoMo</option>
+                <select name="method" class="form-control">
                     <option value="Cash">Tiền mặt</option>
+                    <option value="VNPAY">VNPAY</option>
+                    <option value="MOMO">MOMO</option>
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-success">
-                Thanh toán
+            <button type="submit" class="btn btn-primary">
+                Xác nhận thanh toán
             </button>
         </form>
     </div>

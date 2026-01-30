@@ -47,6 +47,12 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
+// Program.cs
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddHttpContextAccessor();
+
+
+
 // ===== ĐĂNG KÝ AUTH + EMAIL + CACHE =====
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();

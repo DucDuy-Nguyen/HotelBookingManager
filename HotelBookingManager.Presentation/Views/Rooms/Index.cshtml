@@ -1,53 +1,122 @@
 ﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.RoomDto>
+@using System.Security.Claims
 
 @{
     var currentStatus = (ViewBag.Status as string) ?? "active";
+    var roleClaim = User.FindFirst("RoleId")?.Value;
+    var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
 }
 
-<h2>Quản lý phòng</h2>
+<!-- 🔥 CHỈ ADMIN/STAFF (1,2) VÀO ĐƯỢC -->
+@if (!isAdminOrStaff)
+{
+    <div class="alert alert-danger">
+        <h4>❌ Không có quyền truy cập</h4>
+        <p>Chỉ <strong>Admin (ID:1)</strong> và <strong>Staff (ID:2)</strong> mới quản lý phòng được.</p>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-warning">Đăng nhập Admin/Staff</a>
+    </div>
+    return;
+}
 
-<a asp-action="Create" class="btn btn-success mb-3">Thêm phòng</a>
+<h2>🛠️ Quản lý phòng (Admin/Staff)</h2>
 
-<form asp-action="Index" method="get" class="mb-3">
-    <label class="form-label me-2">Trạng thái</label>
-    <select name="status"
-            class="form-select d-inline-block w-auto"
-            onchange="this.form.submit()">
-        <option value="active" selected="@(currentStatus == "active")">Active</option>
-        <option value="inactive" selected="@(currentStatus == "inactive")">Inactive</option>
-        <option value="all" selected="@(currentStatus == "all")">Cả 2</option>
-    </select>
-</form>
+<div class="d-flex justify-content-between mb-3">
+    <a asp-action="Create" class="btn btn-success">
+        <i class="fas fa-plus me-1"></i>Thêm phòng mới
+    </a>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>HotelId</th>
-            <th>Số phòng</th>
-            <th>Tầng</th>
-            <th>Loại phòng</th>
-            <th>Giá hiện tại</th>
-            <th>Trạng thái</th>
-            <th>Active</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var r in Model)
-        {
-            <tr>
-                <td>@r.HotelId</td>
-                <td>@r.RoomNumber</td>
-                <td>@r.Floor</td>
-                <td>@r.RoomTypeId</td>
-                <td>@r.CurrentPrice.ToString("N0")</td>
-                <td>@r.Status</td>
-                <td>@r.IsActive</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@r.RoomId" class="btn btn-warning btn-sm">Sửa</a>
-                    <a asp-action="Delete" asp-route-id="@r.RoomId" class="btn btn-danger btn-sm">Xóa</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <form asp-action="Index" method="get" class="d-inline">
+        <label class="form-label me-2 mb-0 d-none d-md-inline">Lọc:</label>
+        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="active" selected="@(currentStatus == "active")">Active</option>
+            <option value="inactive" selected="@(currentStatus == "inactive")">Inactive</option>
+            <option value="all" selected="@(currentStatus == "all")">Tất cả</option>
+        </select>
+    </form>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center py-5">
+        <i class="fas fa-building fs-1 mb-3 opacity-75"></i>
+        <h4>Chưa có phòng nào</h4>
+        <a asp-action="Create" class="btn btn-primary">➕ Thêm phòng đầu tiên</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 8%;">Hotel</th>
+                    <th style="width: 10%;">Số phòng</th>
+                    <th style="width: 8%;">Tầng</th>
+                    <th style="width: 10%;">Loại</th>
+                    <th style="width: 12%;">Giá</th>
+                    <th style="width: 12%;">Trạng thái</th>
+                    <th style="width: 8%;">Active</th>
+                    <th style="width: 32%;">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr class="@(r.Status == "Available" ? "table-success" : "")">
+                        <td><span class="badge bg-info">@r.HotelId</span></td>
+                        <td><strong>@r.RoomNumber</strong></td>
+                        <td class="text-center">@r.Floor</td>
+                        <td>@r.RoomTypeId</td>
+                        <td><strong class="text-success">@r.CurrentPrice.ToString("N0") VNĐ</strong></td>
+                        <td>
+                            @if (r.Status == "Available")
+                            {
+                                <span class="badge bg-success fs-6">Available</span>
+                            }
+                            else if (r.Status == "Booked")
+                            {
+                                <span class="badge bg-warning text-dark fs-6">Booked</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary fs-6">@r.Status</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @if (r.IsActive)
+                            {
+                                <span class="badge bg-success fs-6">✓</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger fs-6">✗</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a asp-action="Edit" asp-route-id="@r.RoomId"
+                                   class="btn btn-warning text-white"
+                                   title="Sửa phòng @r.RoomNumber">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@r.RoomId"
+                                   class="btn btn-danger"
+                                   title="Xóa phòng @r.RoomNumber"
+                                   onclick="return confirm('Xóa vĩnh viễn phòng @r.RoomNumber?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <script>
+        alert('@TempData["Success"]');
+    </script>
+}

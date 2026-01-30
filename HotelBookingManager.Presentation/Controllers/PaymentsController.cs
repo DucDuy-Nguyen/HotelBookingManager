@@ -1,6 +1,6 @@
-﻿using HotelBookingManager.BusinessObjects.DTO;
-using HotelBookingManager.BusinessObjects.IService;
+﻿using HotelBookingManager.BusinessObjects.IService;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace HotelBookingManager.Presentation.Controllers
@@ -8,77 +8,75 @@ namespace HotelBookingManager.Presentation.Controllers
     public class PaymentsController : Controller
     {
         private readonly IPaymentService _paymentService;
+        private readonly IBookingService _bookingService;
 
-        public PaymentsController(IPaymentService paymentService)
+        public PaymentsController(
+            IPaymentService paymentService,
+            IBookingService bookingService)
         {
             _paymentService = paymentService;
+            _bookingService = bookingService;
         }
 
-        // GET: /Payments
+        // 📜 LỊCH SỬ THANH TOÁN
         public async Task<IActionResult> Index()
         {
-            var payments = await _paymentService.GetAllAsync();
-            return View(payments); // model: IEnumerable<PaymentDto>
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var payments = await _paymentService.GetByUserAsync(userId);
+            return View(payments);
         }
 
-        // GET: /Payments/Pay?bookingId=1
+        // 🔥 ĐẶT PHÒNG → PAY
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> QuickPay(int roomId, int hotelId, int days = 1)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            int bookingId = await _bookingService.QuickCreateAsync(
+                roomId, hotelId, days, userId
+            );
+
+            return RedirectToAction("Pay", new { bookingId });
+        }
+
+        // 💳 TRANG PAY
         [HttpGet]
         public async Task<IActionResult> Pay(int bookingId)
         {
-            PaymentDto payment;
-            try
-            {
-                payment = await _paymentService.EnsurePaymentForBookingAsync(bookingId);
-            }
-            catch
-            {
+            // tạo payment Pending nếu chưa có
+            var payment = await _paymentService.EnsurePaymentForBookingAsync(
+                bookingId, "Cash" // mặc định, user sẽ chọn lại
+            );
+
+            if (payment == null)
                 return NotFound();
-            }
 
-            ViewBag.PaymentId = payment.PaymentId;
-            ViewBag.BookingInfo =
-                $"{payment.CheckInDate:dd/MM/yyyy} - {payment.CheckOutDate:dd/MM/yyyy}";
-            ViewBag.Amount = payment.Amount;
-
-            return View();
+            return View(payment); // ⚠️ TRUYỀN MODEL
         }
 
-        // POST: /Payments/Pay
+
+
+        // ✅ XÁC NHẬN THANH TOÁN
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Pay(int paymentId, string method)
         {
-            try
-            {
-                await _paymentService.PayAsync(paymentId, method);
-            }
-            catch
-            {
-                return NotFound();
-            }
-
+            await _paymentService.PayAsync(paymentId, method);
             return RedirectToAction("PayResult", new { paymentId });
         }
 
-        // GET: /Payments/PayResult?paymentId=2
+
         public async Task<IActionResult> PayResult(int paymentId)
         {
             var payment = await _paymentService.GetPayResultAsync(paymentId);
-            if (payment == null)
-                return NotFound("Không tìm thấy giao dịch");
-
-            return View(payment); // model: PaymentDto
+            return View(payment);
         }
 
-        // GET: /Payments/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null) return NotFound();
-
-            var payment = await _paymentService.GetByIdAsync(id.Value);
-            if (payment == null) return NotFound();
-
-            return View(payment); // model: PaymentDto
+            var payment = await _paymentService.GetByIdAsync(id);
+            return View(payment);
         }
     }
 }

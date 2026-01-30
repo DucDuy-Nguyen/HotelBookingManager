@@ -1,4 +1,9 @@
-﻿@model HotelBookingManager.DataAccess.Models.Hotel
+﻿@model HotelBookingManager.Presentation.Models.HotelViewModel
+@using System.Security.Claims
+@{
+    var roleClaim = User.FindFirst("RoleId")?.Value;
+    var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
+}
 
 <h2>Chi tiết khách sạn</h2>
 
@@ -19,7 +24,7 @@
         <dd class="col-sm-10">@Model.Country</dd>
 
         <dt class="col-sm-2">Rating</dt>
-        <dd class="col-sm-10">@Model.Rating</dd>
+        <dd class="col-sm-10">@Model.Rating ★</dd>
 
         <dt class="col-sm-2">Điện thoại</dt>
         <dd class="col-sm-10">@Model.PhoneNumber</dd>
@@ -27,10 +32,27 @@
         <dt class="col-sm-2">Email</dt>
         <dd class="col-sm-10">@Model.Email</dd>
 
+        <dt class="col-sm-2">Trạng thái</dt>
+        <dd class="col-sm-10">
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">Active</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Inactive</span>
+            }
+        </dd>
     </dl>
 </div>
 
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.HotelId" class="btn btn-primary">Sửa</a>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+<div class="mt-3">
+    @* ADMIN/STAFF ONLY: Sửa *@
+    @if (isAdminOrStaff)
+    {
+        <a asp-action="Edit" asp-route-id="@Model.HotelId" class="btn btn-warning">Sửa</a>
+    }
+
+    <!-- Public: Quay lại -->
+    <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
 </div>
