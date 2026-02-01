@@ -13,7 +13,6 @@
     <a asp-action="Create" class="btn btn-success">
         <i class="fas fa-plus me-1"></i> Thêm phòng mới
     </a>
-
     <form asp-action="Index" method="get" class="d-inline">
         <label class="form-label me-2 mb-0 d-none d-md-inline">
             Lọc theo trạng thái:
@@ -58,7 +57,6 @@ else
                     <th style="width: 32%;">Thao tác</th>
                 </tr>
             </thead>
-
             <tbody>
                 @foreach (var r in Model)
                 {
@@ -77,16 +75,12 @@ else
                                 </span>
                             }
                         </td>
-
-
                         <td>
                             <strong>@r.RoomNumber</strong>
                         </td>
-
                         <td class="text-center">
                             @r.Floor
                         </td>
-
                         <td>
                             @if (!string.IsNullOrEmpty(r.RoomTypeName))
                             {
@@ -97,14 +91,11 @@ else
                                 @:Loại phòng #@r.RoomTypeId
                             }
                         </td>
-
-
                         <td>
                             <strong class="text-success">
                                 @r.CurrentPrice.ToString("N0") VNĐ
                             </strong>
                         </td>
-
                         <td class="text-center">
                             @if (r.Status == "Available")
                             {
@@ -125,7 +116,6 @@ else
                                 </span>
                             }
                         </td>
-
                         <td class="text-center">
                             @if (r.IsActive)
                             {
@@ -140,22 +130,21 @@ else
                                 </span>
                             }
                         </td>
-
+                        <!-- ✨ SỬA: Thêm text vào nút Edit và Delete -->
                         <td>
-                            <div class="btn-group btn-group-sm" role="group">
+                            <div class="d-flex gap-2">
                                 <a asp-action="Edit"
                                    asp-route-id="@r.RoomId"
-                                   class="btn btn-warning text-white"
+                                   class="btn btn-warning btn-sm text-white"
                                    title="Chỉnh sửa phòng @r.RoomNumber">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fas fa-edit"></i> Sửa
                                 </a>
-
                                 <a asp-action="Delete"
                                    asp-route-id="@r.RoomId"
-                                   class="btn btn-danger"
+                                   class="btn btn-danger btn-sm"
                                    title="Xóa phòng @r.RoomNumber"
                                    onclick="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn phòng @r.RoomNumber không?')">
-                                    <i class="fas fa-trash"></i>
+                                    <i class="fas fa-trash"></i> Xóa
                                 </a>
                             </div>
                         </td>

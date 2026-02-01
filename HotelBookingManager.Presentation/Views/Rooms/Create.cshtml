@@ -2,37 +2,46 @@
 
 <h2>Thêm phòng</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" id="createRoomForm">
     <div asp-validation-summary="All" class="text-danger"></div>
+
+    <!-- ✨ Thêm div để hiển thị error custom -->
+    <div id="customError" class="alert alert-danger" style="display:none;"></div>
 
     <div class="mb-3">
         <label class="form-label">Khách sạn</label>
-        <select asp-for="HotelId" class="form-select" asp-items="ViewBag.HotelId"></select>
+        <select asp-for="HotelId" class="form-select" id="hotelSelect" asp-items="ViewBag.HotelId" required></select>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Loại phòng</label>
-        <select asp-for="RoomTypeId" class="form-select" asp-items="ViewBag.RoomTypeId"></select>
+        <select asp-for="RoomTypeId" class="form-select" asp-items="ViewBag.RoomTypeId" required></select>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Số phòng</label>
-        <input asp-for="RoomNumber" class="form-control" />
+        <input asp-for="RoomNumber" class="form-control" id="roomNumber" required />
+        <small class="text-danger" id="roomNumberError"></small>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Tầng</label>
-        <input asp-for="Floor" class="form-control" />
+        <input asp-for="Floor" class="form-control" type="number" />
     </div>
 
     <div class="mb-3">
         <label class="form-label">Giá hiện tại</label>
-        <input asp-for="CurrentPrice" class="form-control" />
+        <input asp-for="CurrentPrice" class="form-control" type="number" step="0.01" required />
     </div>
 
     <div class="mb-3">
         <label class="form-label">Trạng thái</label>
-        <input asp-for="Status" class="form-control" />
+        <select asp-for="Status" class="form-select" required>
+            <option value="">-- Chọn Trạng Thái --</option>
+            <option value="Available">Có Sẵn (Available)</option>
+            <option value="Booked">Đã Đặt (Booked)</option>
+        </select>
+
     </div>
 
     <div class="form-check mb-3">
@@ -40,6 +49,69 @@
         <label asp-for="IsActive" class="form-check-label"></label>
     </div>
 
-    <button type="submit" class="btn btn-primary">Lưu</button>
+    <button type="submit" class="btn btn-primary" id="submitBtn">Lưu</button>
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
 </form>
+
+<!-- ✨ Script validation -->
+<script>
+    // Dữ liệu phòng từ server (dùng ViewBag)
+    const allRoomsByHotel = @Html.Raw(ViewBag.AllRoomsByHotel ?? "{}");
+
+    // Lấy form element
+    const form = document.getElementById('createRoomForm');
+    const hotelSelect = document.getElementById('hotelSelect');
+    const roomNumberInput = document.getElementById('roomNumber');
+    const roomNumberError = document.getElementById('roomNumberError');
+    const customError = document.getElementById('customError');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // ✨ Check phòng trùng khi thay đổi hotel hoặc số phòng
+    function validateRoomNumber() {
+        const hotelId = hotelSelect.value;
+        const roomNumber = roomNumberInput.value.trim();
+
+        // Clear error
+        roomNumberError.textContent = '';
+        customError.style.display = 'none';
+
+        if (!hotelId || !roomNumber) {
+            submitBtn.disabled = false;
+            return true;
+        }
+
+        // Lấy danh sách phòng của hotel này
+        const roomsInHotel = allRoomsByHotel[hotelId] || [];
+
+        // Kiểm tra xem có phòng trùng không
+        const isDuplicate = roomsInHotel.some(r => r.RoomNumber === roomNumber);
+
+        if (isDuplicate) {
+            roomNumberError.textContent = `❌ Phòng số ${roomNumber} đã tồn tại!`;
+            customError.textContent = `Phòng số ${roomNumber} đã tồn tại ở khách sạn này. Vui lòng chọn số phòng khác.`;
+            customError.style.display = 'block';
+            submitBtn.disabled = true;
+            return false;
+        }
+
+        submitBtn.disabled = false;
+        return true;
+    }
+
+    hotelSelect.addEventListener('change', validateRoomNumber);
+    roomNumberInput.addEventListener('change', validateRoomNumber);
+    roomNumberInput.addEventListener('keyup', validateRoomNumber);
+
+    form.addEventListener('submit', function(e) {
+        if (!validateRoomNumber()) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

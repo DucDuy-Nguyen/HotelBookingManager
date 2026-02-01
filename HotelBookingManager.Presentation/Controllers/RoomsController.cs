@@ -82,6 +82,7 @@ namespace HotelBookingManager.Presentation.Controllers
         // =======================
         // GET: /Rooms/Create
         // =======================
+        // GET: /Rooms/Create
         public async Task<IActionResult> Create()
         {
             var roleId = GetCurrentRoleId();
@@ -89,13 +90,12 @@ namespace HotelBookingManager.Presentation.Controllers
                 return Forbid();
 
             var userHotelId = GetCurrentHotelId();
-
             var hotels = await _hotelService.GetAllAsync();
+
             if (roleId == 2)
             {
                 if (!userHotelId.HasValue)
                     return Forbid();
-
                 hotels = hotels.Where(h => h.HotelId == userHotelId.Value);
             }
 
@@ -109,6 +109,30 @@ namespace HotelBookingManager.Presentation.Controllers
             var roomTypes = await _roomTypeService.GetAllAsync();
             ViewBag.RoomTypeId = new SelectList(roomTypes, "RoomTypeId", "Name");
 
+            // ✨ THÊM: Lấy tất cả phòng, nhóm theo hotel
+            using (var writer = new System.IO.StringWriter())
+            {
+                var allRooms = await _roomService.GetAllAsync();
+                var allRoomsByHotel = new Dictionary<int, List<object>>();
+
+                foreach (var room in allRooms)
+                {
+                    if (!allRoomsByHotel.ContainsKey(room.HotelId))
+                        allRoomsByHotel[room.HotelId] = new List<object>();
+
+                    allRoomsByHotel[room.HotelId].Add(new
+                    {
+                        room.RoomId,
+                        room.RoomNumber,
+                        room.HotelId
+                    });
+                }
+
+                // ✨ Pass dữ liệu cho view dưới dạng JSON
+                var json = System.Text.Json.JsonSerializer.Serialize(allRoomsByHotel);
+                ViewBag.AllRoomsByHotel = json;
+            }
+
             var model = new RoomDto();
             if (roleId == 2 && userHotelId.HasValue)
                 model.HotelId = userHotelId.Value;
@@ -116,9 +140,7 @@ namespace HotelBookingManager.Presentation.Controllers
             return View(model);
         }
 
-        // =======================
-        // POST: /Rooms/Create
-        // =======================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RoomDto room)
@@ -141,9 +163,20 @@ namespace HotelBookingManager.Presentation.Controllers
                 return View(room);
             }
 
+            // ✨ THÊM: Validate ở server (backup khi user bypass JS)
+            var existingRooms = await _roomService.GetByHotelAsync(room.HotelId, false);
+            if (existingRooms.Any(r => r.RoomNumber == room.RoomNumber))
+            {
+                ModelState.AddModelError("RoomNumber",
+                    $"❌ Phòng số {room.RoomNumber} đã tồn tại!");
+                await LoadDropdownsForEditOrCreate(roleId, room.HotelId, room.RoomTypeId);
+                return View(room);
+            }
+
             await _roomService.CreateAsync(room);
             return RedirectToAction(nameof(Index));
         }
+
 
         // =======================
         // GET: /Rooms/Edit/5
