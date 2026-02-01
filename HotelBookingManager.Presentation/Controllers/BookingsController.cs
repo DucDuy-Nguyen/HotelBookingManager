@@ -25,15 +25,59 @@ namespace HotelBookingManager.Presentation.Controllers
         // ===============================
         // 📜 LỊCH SỬ ĐẶT PHÒNG
         // ===============================
-        public async Task<IActionResult> Index(string status = null)
+        public async Task<IActionResult> Index(string status = "Pending")
         {
-            var bookings = string.IsNullOrEmpty(status)
-                ? await _bookingService.GetAllAsync()
-                : await _bookingService.GetByStatusAsync(status);
+            // Lấy roleId
+            var roleClaim = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.Role)
+                ?.Value;
+            var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
+
+            // Lấy tất cả booking theo status
+            var all = await _bookingService.GetByStatusAsync(status); // IEnumerable<BookingDto>
+            IEnumerable<BookingDto> result = all;
+
+            if (roleId == 1)
+            {
+                // Admin: xem tất cả, không lọc thêm
+                result = all;
+            }
+            else if (roleId == 2)
+            {
+                // Staff: xem tất cả booking của khách sạn mình (HotelId từ claim)
+                var hotelIdClaim = User.FindFirst("HotelId")?.Value;
+                if (int.TryParse(hotelIdClaim, out var hotelId) && hotelId > 0)
+                {
+                    result = all.Where(b => b.HotelId == hotelId);
+                }
+                else
+                {
+                    // Không có HotelId => không thấy gì
+                    result = Enumerable.Empty<BookingDto>();
+                }
+            }
+            else
+            {
+                // Role 3 (customer): chỉ xem booking của chính mình
+                var userIdClaim =
+                    User.FindFirst("UserId")?.Value ??
+                    User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (int.TryParse(userIdClaim, out var userId) && userId > 0)
+                {
+                    result = all.Where(b => b.UserId == userId);
+                }
+                else
+                {
+                    result = Enumerable.Empty<BookingDto>();
+                }
+            }
 
             ViewBag.Status = status;
-            return View(bookings);
+            return View(result);
         }
+
+
 
         // ===============================
         // 🆕 CREATE (GET)
@@ -94,6 +138,17 @@ namespace HotelBookingManager.Presentation.Controllers
                 new { bookingId }
             );
         }
+        // ===============================
+         // 🔄 CHANGE STATUS (POST)
+         // ===============================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeStatus(int bookingId, string status)
+        {
+            await _bookingService.ChangeStatusAsync(bookingId, status);
+            return RedirectToAction(nameof(Index));
+        }
+
 
         // ===============================
         // 🔁 LOAD DROPDOWNS

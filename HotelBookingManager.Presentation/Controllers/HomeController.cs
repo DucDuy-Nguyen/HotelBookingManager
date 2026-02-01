@@ -1,4 +1,6 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using HotelBookingManager.BusinessObjects.DTO;
+using HotelBookingManager.BusinessObjects.IService;
 using HotelBookingManager.Presentation.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,9 +8,21 @@ namespace HotelBookingManager.Presentation.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly IHotelService _hotelService;
+
+        public HomeController(IHotelService hotelService)
         {
-            return View();
+            _hotelService = hotelService;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // Lấy 6 khách sạn active (hoặc tất cả, tuỳ bạn)
+            var hotels = (await _hotelService.GetFilteredAsync(null, "active"))
+                         .Take(10)
+                         .ToList();
+
+            return View(hotels); // model: IEnumerable<HotelDto>
         }
 
         public IActionResult Privacy()

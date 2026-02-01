@@ -23,6 +23,9 @@ namespace HotelBookingManager.BusinessObjects.Service
             RoomId = r.RoomId,
             HotelId = r.HotelId,
             RoomTypeId = r.RoomTypeId,
+            HotelName = r.Hotel?.Name,          // an toàn
+            RoomTypeName = r.RoomType?.Name,   // <-- GÁN TÊN LOẠI PHÒNG
+
             RoomNumber = r.RoomNumber,
             Floor = r.Floor,
             Status = r.Status,

@@ -17,6 +17,8 @@ public class User
     public bool IsActive { get; set; }
 
     public Role? Role { get; set; }
+    public int? HotelId { get; set; }      // <-- THÊM DÒNG NÀY
+
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();

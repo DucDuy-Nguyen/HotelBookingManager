@@ -31,7 +31,9 @@ namespace HotelBookingManager.BusinessObjects.Service
             Rating = (double?)h.Rating,
             PhoneNumber = h.PhoneNumber,
             Email = h.Email,
-            IsActive = h.IsActive
+            IsActive = h.IsActive,
+            ImageUrl = h.ImageUrl           // thêm
+
         };
 
         private static Hotel ToEntity(HotelDto dto) => new Hotel
@@ -45,7 +47,9 @@ namespace HotelBookingManager.BusinessObjects.Service
             Rating = (decimal?)dto.Rating,
             PhoneNumber = dto.PhoneNumber,
             Email = dto.Email,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            ImageUrl = dto.ImageUrl         // thêm
+
         };
 
         // ====== IMPLEMENT IHotelService với DTO ======
@@ -88,6 +92,8 @@ namespace HotelBookingManager.BusinessObjects.Service
             existing.PhoneNumber = dto.PhoneNumber;
             existing.Email = dto.Email;
             existing.IsActive = dto.IsActive;
+            existing.ImageUrl = dto.ImageUrl;
+
 
             _hotelRepository.Update(existing);
             await _hotelRepository.SaveChangesAsync();

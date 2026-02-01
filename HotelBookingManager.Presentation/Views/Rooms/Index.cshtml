@@ -7,30 +7,27 @@
     var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
 }
 
-<!-- 🔥 CHỈ ADMIN/STAFF (1,2) VÀO ĐƯỢC -->
-@if (!isAdminOrStaff)
-{
-    <div class="alert alert-danger">
-        <h4>❌ Không có quyền truy cập</h4>
-        <p>Chỉ <strong>Admin (ID:1)</strong> và <strong>Staff (ID:2)</strong> mới quản lý phòng được.</p>
-        <a asp-controller="Account" asp-action="Login" class="btn btn-warning">Đăng nhập Admin/Staff</a>
-    </div>
-    return;
-}
-
-<h2>🛠️ Quản lý phòng (Admin/Staff)</h2>
+<h2>🛠️ Quản lý phòng (Quản trị / Nhân viên)</h2>
 
 <div class="d-flex justify-content-between mb-3">
     <a asp-action="Create" class="btn btn-success">
-        <i class="fas fa-plus me-1"></i>Thêm phòng mới
+        <i class="fas fa-plus me-1"></i> Thêm phòng mới
     </a>
 
     <form asp-action="Index" method="get" class="d-inline">
-        <label class="form-label me-2 mb-0 d-none d-md-inline">Lọc:</label>
+        <label class="form-label me-2 mb-0 d-none d-md-inline">
+            Lọc theo trạng thái:
+        </label>
         <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="active" selected="@(currentStatus == "active")">Active</option>
-            <option value="inactive" selected="@(currentStatus == "inactive")">Inactive</option>
-            <option value="all" selected="@(currentStatus == "all")">Tất cả</option>
+            <option value="active" selected="@(currentStatus == "active")">
+                Đang hoạt động
+            </option>
+            <option value="inactive" selected="@(currentStatus == "inactive")">
+                Ngừng hoạt động
+            </option>
+            <option value="all" selected="@(currentStatus == "all")">
+                Tất cả
+            </option>
         </select>
     </form>
 </div>
@@ -39,70 +36,125 @@
 {
     <div class="alert alert-info text-center py-5">
         <i class="fas fa-building fs-1 mb-3 opacity-75"></i>
-        <h4>Chưa có phòng nào</h4>
-        <a asp-action="Create" class="btn btn-primary">➕ Thêm phòng đầu tiên</a>
+        <h4>Chưa có phòng nào trong hệ thống</h4>
+        <a asp-action="Create" class="btn btn-primary mt-2">
+            ➕ Thêm phòng đầu tiên
+        </a>
     </div>
 }
 else
 {
     <div class="table-responsive">
         <table class="table table-hover table-bordered align-middle">
-            <thead class="table-dark">
+            <thead class="table-dark text-center">
                 <tr>
-                    <th style="width: 8%;">Hotel</th>
+                    <th style="width: 8%;">Khách sạn</th>
                     <th style="width: 10%;">Số phòng</th>
                     <th style="width: 8%;">Tầng</th>
-                    <th style="width: 10%;">Loại</th>
-                    <th style="width: 12%;">Giá</th>
-                    <th style="width: 12%;">Trạng thái</th>
-                    <th style="width: 8%;">Active</th>
-                    <th style="width: 32%;">Hành động</th>
+                    <th style="width: 10%;">Loại phòng</th>
+                    <th style="width: 12%;">Giá phòng</th>
+                    <th style="width: 12%;">Tình trạng phòng</th>
+                    <th style="width: 8%;">Kích hoạt</th>
+                    <th style="width: 32%;">Thao tác</th>
                 </tr>
             </thead>
+
             <tbody>
                 @foreach (var r in Model)
                 {
                     <tr class="@(r.Status == "Available" ? "table-success" : "")">
-                        <td><span class="badge bg-info">@r.HotelId</span></td>
-                        <td><strong>@r.RoomNumber</strong></td>
-                        <td class="text-center">@r.Floor</td>
-                        <td>@r.RoomTypeId</td>
-                        <td><strong class="text-success">@r.CurrentPrice.ToString("N0") VNĐ</strong></td>
+                        <td class="text-center">
+                            @if (!string.IsNullOrEmpty(r.HotelName))
+                            {
+                                <span class="badge bg-info">
+                                    @r.HotelName
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">
+                                    Hotel #@r.HotelId
+                                </span>
+                            }
+                        </td>
+
+
                         <td>
+                            <strong>@r.RoomNumber</strong>
+                        </td>
+
+                        <td class="text-center">
+                            @r.Floor
+                        </td>
+
+                        <td>
+                            @if (!string.IsNullOrEmpty(r.RoomTypeName))
+                            {
+                                @r.RoomTypeName
+                            }
+                            else
+                            {
+                                @:Loại phòng #@r.RoomTypeId
+                            }
+                        </td>
+
+
+                        <td>
+                            <strong class="text-success">
+                                @r.CurrentPrice.ToString("N0") VNĐ
+                            </strong>
+                        </td>
+
+                        <td class="text-center">
                             @if (r.Status == "Available")
                             {
-                                <span class="badge bg-success fs-6">Available</span>
+                                <span class="badge bg-success fs-6">
+                                    Có sẵn
+                                </span>
                             }
                             else if (r.Status == "Booked")
                             {
-                                <span class="badge bg-warning text-dark fs-6">Booked</span>
+                                <span class="badge bg-warning text-dark fs-6">
+                                    Đã được đặt
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary fs-6">@r.Status</span>
+                                <span class="badge bg-secondary fs-6">
+                                    @r.Status
+                                </span>
                             }
                         </td>
+
                         <td class="text-center">
                             @if (r.IsActive)
                             {
-                                <span class="badge bg-success fs-6">✓</span>
+                                <span class="badge bg-success fs-6">
+                                    Hoạt động
+                                </span>
                             }
                             else
                             {
-                                <span class="badge bg-danger fs-6">✗</span>
+                                <span class="badge bg-danger fs-6">
+                                    Ngừng
+                                </span>
                             }
                         </td>
+
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
-                                <a asp-action="Edit" asp-route-id="@r.RoomId"
+                                <a asp-action="Edit"
+                                   asp-route-id="@r.RoomId"
                                    class="btn btn-warning text-white"
-                                   title="Sửa phòng @r.RoomNumber">
+                                   title="Chỉnh sửa phòng @r.RoomNumber">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@r.RoomId"
+
+                                <a asp-action="Delete"
+                                   asp-route-id="@r.RoomId"
                                    class="btn btn-danger"
                                    title="Xóa phòng @r.RoomNumber"
-                                   onclick="return confirm('Xóa vĩnh viễn phòng @r.RoomNumber?')">
+                                   onclick="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn phòng @r.RoomNumber không?')">
                                     <i class="fas fa-trash"></i>
                                 </a>
                             </div>

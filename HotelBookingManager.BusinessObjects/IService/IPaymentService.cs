@@ -1,15 +1,16 @@
 ﻿using HotelBookingManager.BusinessObjects.DTO;
-using System.Collections.Generic;
+using HotelBookingManager.DataAccess.Models;
 using System.Threading.Tasks;
 
-namespace HotelBookingManager.BusinessObjects.IService
+public interface IPaymentService
 {
-    public interface IPaymentService
-    {
-        Task<IEnumerable<PaymentDto>> GetAllAsync();
-        Task<PaymentDto?> GetByIdAsync(int id);
-        Task<PaymentDto> EnsurePaymentForBookingAsync(int bookingId);
-        Task PayAsync(int paymentId, string method);
-        Task<PaymentDto?> GetPayResultAsync(int paymentId);
-    }
+    Task<IEnumerable<PaymentDto>> GetAllAsync();
+    Task<PaymentDto?> GetByIdAsync(int id);
+    Task<IEnumerable<PaymentDto>> GetByUserAsync(int userId);
+
+    // 🔥 CHỈNH Ở ĐÂY
+    Task<Payment> EnsurePaymentForBookingAsync(int bookingId, string method);
+
+    Task PayAsync(int paymentId, string method);
+    Task<PaymentDto?> GetPayResultAsync(int paymentId);
 }

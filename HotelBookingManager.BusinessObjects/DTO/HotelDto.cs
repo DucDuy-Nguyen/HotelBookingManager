@@ -23,5 +23,7 @@ namespace HotelBookingManager.BusinessObjects.DTO
         public string? Email { get; set; }
 
         public bool IsActive { get; set; }
+        public string? ImageUrl { get; set; } // để hiển thị ảnh
+
     }
 }

@@ -34,7 +34,9 @@ namespace HotelBookingManager.BusinessObjects.Services
                 FullName = user.FullName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                RoleId = user.RoleId
+                RoleId = user.RoleId,
+                HotelId = user.HotelId      // ĐẢM BẢO GÁN DÒNG NÀY
+
             };
         }
 

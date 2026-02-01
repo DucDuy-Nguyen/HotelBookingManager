@@ -4,38 +4,79 @@
     ViewData["Title"] = "Chi tiết thanh toán";
 }
 
-<h1>Chi tiết thanh toán</h1>
+<h2 class="mb-3">📄 Chi tiết thanh toán</h2>
 
-<div class="card">
+<div class="card shadow-sm">
     <div class="card-body">
-        <dl class="row">
-            <dt class="col-sm-2">Số tiền</dt>
-            <dd class="col-sm-10">@Model.Amount.ToString("N0") VNĐ</dd>
+        <dl class="row mb-0">
 
-            <dt class="col-sm-2">Phương thức</dt>
-            <dd class="col-sm-10">@Model.Method</dd>
+            <dt class="col-sm-3">💰 Số tiền</dt>
+            <dd class="col-sm-9 fw-bold">
+                @Model.Amount.ToString("N0") VNĐ
+            </dd>
 
-            <dt class="col-sm-2">Trạng thái</dt>
-            <dd class="col-sm-10">
-                <span class="badge @(Model.Status == "Success" ? "bg-success" : Model.Status == "Pending" ? "bg-warning text-dark" : "bg-danger")">
-                    @Model.Status
+            <dt class="col-sm-3">💳 Phương thức</dt>
+            <dd class="col-sm-9">
+                @(Model.Method == "Cash" ? "Tiền mặt" :
+                                Model.Method == "VNPAY" ? "VNPay" :
+                                Model.Method)
+            </dd>
+
+            <dt class="col-sm-3">📌 Trạng thái</dt>
+            <dd class="col-sm-9">
+                @{
+                    var badgeClass = "bg-secondary";
+                    var statusText = Model.Status;
+
+                    if (Model.Status == "Paid" || Model.Status == "Success")
+                    {
+                        badgeClass = "bg-success";
+                        statusText = "Đã thanh toán";
+                    }
+                    else if (Model.Status == "Pending")
+                    {
+                        badgeClass = "bg-warning text-dark";
+                        statusText = "Chờ thanh toán";
+                    }
+                    else if (Model.Status == "Failed")
+                    {
+                        badgeClass = "bg-danger";
+                        statusText = "Thất bại";
+                    }
+                }
+
+                <span class="badge @badgeClass">
+                    @statusText
                 </span>
             </dd>
 
-            <dt class="col-sm-2">Mã GD</dt>
-            <dd class="col-sm-10">@Model.TransactionCode</dd>
+            <dt class="col-sm-3">🔢 Mã giao dịch</dt>
+            <dd class="col-sm-9">
+                @(Model.TransactionCode ?? "—")
+            </dd>
 
-            <dt class="col-sm-2">PaidAt</dt>
-            <dd class="col-sm-10">@Model.PaidAt?.ToString("dd/MM/yyyy HH:mm")</dd>
+            <dt class="col-sm-3">🕒 Thời điểm thanh toán</dt>
+            <dd class="col-sm-9">
+                @(Model.PaidAt.HasValue
+                                ? Model.PaidAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                : "Chưa thanh toán")
+            </dd>
 
-            <dt class="col-sm-2">CreatedAt</dt>
-            <dd class="col-sm-10">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+            <dt class="col-sm-3">📅 Ngày tạo</dt>
+            <dd class="col-sm-9">
+                @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </dd>
 
-            <dt class="col-sm-2">Booking</dt>
-            <dd class="col-sm-10">@Model.BookingId</dd>
+            <dt class="col-sm-3">🏨 Mã booking</dt>
+            <dd class="col-sm-9">
+                @Model.BookingId
+            </dd>
 
-            <dt class="col-sm-2">User</dt>
-            <dd class="col-sm-10">@Model.UserId</dd>
+            <dt class="col-sm-3">👤 Khách hàng (UserId)</dt>
+            <dd class="col-sm-9">
+                @Model.UserId
+            </dd>
+
         </dl>
     </div>
 </div>
@@ -43,12 +84,14 @@
 <div class="mt-4">
     @if (Model.Status == "Pending")
     {
-        <a asp-action="Pay" asp-route-paymentId="@Model.PaymentId" class="btn btn-success me-2">
-            Thanh toán
+        <a asp-action="Pay"
+           asp-route-paymentId="@Model.PaymentId"
+           class="btn btn-success me-2">
+            💵 Thanh toán
         </a>
     }
 
     <a asp-action="Index" class="btn btn-secondary">
-        Quay lại
+        ⬅ Quay lại
     </a>
 </div>

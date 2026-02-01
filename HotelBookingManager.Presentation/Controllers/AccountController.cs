@@ -212,22 +212,21 @@ namespace HotelBookingManager.Presentation.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        
+
         private async Task SignInUser(UserDto user)
         {
             var roleId = user.RoleId ?? 3;
 
             var claims = new List<Claim>
-            {
-                new Claim("UserId", user.UserId.ToString()),                  
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()), 
-
-                new Claim(ClaimTypes.Name,  string.IsNullOrWhiteSpace(user.FullName) ? user.Email : user.FullName),
-                new Claim(ClaimTypes.Email, user.Email),
-
-                new Claim(ClaimTypes.Role, roleId.ToString())
-                
-            };
+    {
+        new Claim("UserId", user.UserId.ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new Claim(ClaimTypes.Name,
+            string.IsNullOrWhiteSpace(user.FullName) ? user.Email : user.FullName),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Role, roleId.ToString()),
+        new Claim("HotelId", (user.HotelId ?? 0).ToString())   // <-- QUAN TRỌNG
+    };
 
             var identity = new ClaimsIdentity(
                 claims,

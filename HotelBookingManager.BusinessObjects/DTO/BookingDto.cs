@@ -14,5 +14,8 @@ namespace HotelBookingManager.BusinessObjects.DTO
         public DateTime CheckOutDate { get; set; }
         public string Status { get; set; } = "";
         public decimal TotalPrice { get; set; }
+        public string? CustomerName { get; set; }   // User.FullName
+        public string? HotelName { get; set; }      // Hotel.Name
+        public string? RoomNumber { get; set; }     // Room.RoomNumber
     }
 }

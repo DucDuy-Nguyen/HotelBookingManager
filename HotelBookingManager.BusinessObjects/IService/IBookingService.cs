@@ -8,11 +8,11 @@ namespace HotelBookingManager.BusinessObjects.IService
     {
         Task<IEnumerable<BookingDto>> GetAllAsync();
         Task<IEnumerable<BookingDto>> GetByStatusAsync(string status);
-        Task<int> CreateAsync(BookingDto booking);
-
-        Task ChangeStatusAsync(int bookingId, string newStatus);
         Task<IEnumerable<BookingDto>> GetByUserAsync(int userId);
 
+        Task<int> CreateAsync(BookingDto bookingDto);
+        Task<int> QuickCreateAsync(int roomId, int hotelId, int days, int userId);
 
+        Task ChangeStatusAsync(int bookingId, string newStatus);
     }
 }

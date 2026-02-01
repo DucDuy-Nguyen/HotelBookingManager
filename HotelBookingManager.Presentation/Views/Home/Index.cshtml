@@ -1,103 +1,235 @@
-﻿@{
+﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.HotelDto>
+
+@{
     ViewData["Title"] = "Trang chủ";
 }
 
-<section class="py-5">
-    <div class="container">
-        <div class="row align-items-center gy-4">
+<!-- HERO -->
+<section class="py-5 position-relative text-white"
+         style="
+            min-height: 75vh;
+            background:
+                linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+                url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+         ">
+    <div class="container h-100">
+        <div class="row align-items-center h-100 gy-4">
 
+            <div class="container">
+                <div class="row align-items-center gy-5 text-white">
 
+                    <!-- Search form -->
+                    <div class="row mt-3 justify-content-center">
+                        <div class="col-md-10">
+                            <form asp-controller="Hotels" asp-action="Index" method="get"
+                                  class="row g-3 bg-white p-4 rounded-4 shadow-lg">
 
+                                <div class="col-md-5">
+                                    <input type="text"
+                                           name="city"
+                                           class="form-control form-control-lg rounded-3"
+                                           placeholder="Nhập TP Hồ Chí Minh, Hà Nội..."
+                                           value="@ViewBag.SearchCity" />
+                                </div>
 
-            <!-- Search form trên Home -->
-            <div class="row mt-4">
-                <div class="col-md-8">
-                    <form asp-controller="Hotels" asp-action="Index" method="get" class="row g-3">
-                        <div class="col-md-5">
-                            <input type="text" name="city" class="form-control" placeholder="Nhập TP Hồ Chí Minh, Hà Nội..." value="@ViewBag.SearchCity" />
+                                <div class="col-md-3">
+                                    <select name="statusFilter"
+                                            class="form-select form-select-lg rounded-3">
+                                        <option value="active" selected>Đang hoạt động </option>
+                                        <option value="inactive">Ngưng hoạt động</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <button type="submit"
+                                            class="btn btn-primary btn-lg w-100 fw-semibold rounded-3">
+                                        🔍 Tìm khách sạn
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="col-md-3">
-                            <select name="statusFilter" class="form-select">
-                                <option value="active" selected>Tất cả (active)</option>
-                                <option value="inactive">Không active</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="submit" class="btn btn-primary w-100">Tìm khách sạn</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    </div>
+
             <!-- Hero text -->
             <div class="col-lg-6">
-                <h1 class="display-5 fw-bold text-primary mb-3">
-                    Đặt phòng khách sạn dễ dàng, chỉ trong vài phút
+                <span class="badge bg-primary mb-3 px-3 py-2">
+                    Nền tảng đặt phòng trực tuyến
+                </span>
+
+                <h1 class="display-4 fw-bold mb-3">
+                    Đặt phòng khách sạn <br /> nhanh chóng & tiện lợi
                 </h1>
-                <p class="lead text-muted mb-4">
-                    Tìm và đặt phòng khách sạn phù hợp cho chuyến đi của bạn với giá tốt, xác nhận đặt phòng tức thì và quản lý đặt phòng hoàn toàn trực tuyến.
+
+                <p class="lead text-light opacity-75 mb-4">
+                    Tìm kiếm, so sánh và đặt phòng khách sạn phù hợp cho chuyến đi của bạn.
+                    Xác nhận tức thì – quản lý hoàn toàn online.
                 </p>
 
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <p class="mb-2">
-                        Xin chào <strong>@User.Identity.Name</strong>
-                        (@User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value)
-                    </p>
-                    <a asp-controller="Rooms" asp-action="Index" class="btn btn-primary btn-lg">
-                        Khám phá phòng hiện có
-                    </a>
-                    <a asp-controller="Bookings" asp-action="Create" class="btn btn-outline-primary btn-lg">
-                        Đặt phòng ngay
-                    </a>
+                    <div class="mb-3">
+                        👋 Xin chào
+                        <strong>@User.Identity.Name</strong>
+                        <span class="opacity-75">
+                            (@User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value)
+                        </span>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-controller="Rooms"
+                           asp-action="Index"
+                           class="btn btn-primary btn-lg">
+                            🔍 Khám phá phòng
+                        </a>
+
+                        <a asp-controller="Bookings"
+                           asp-action="Create"
+                           class="btn btn-outline-light btn-lg">
+                            🏨 Đặt phòng ngay
+                        </a>
+                    </div>
                 }
                 else
                 {
-                    <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg">
-                        Bắt đầu đặt phòng ngay
+                    <a asp-controller="Account"
+                       asp-action="Register"
+                       class="btn btn-primary btn-lg px-4">
+                        🚀 Bắt đầu đặt phòng
                     </a>
                 }
             </div>
 
-
-
             <!-- Features -->
             <div class="col-lg-6">
                 <div class="row g-3">
+
                     <div class="col-12">
-                        <div class="card shadow-sm border-0">
+                        <div class="card border-0 shadow-lg">
                             <div class="card-body">
-                                <h5 class="card-title mb-2">Vì sao chọn Hotel Booking?</h5>
+                                <h5 class="card-title fw-bold mb-2">
+                                    Vì sao chọn Hotel Booking?
+                                </h5>
                                 <p class="card-text text-muted mb-0">
-                                    Hệ thống giúp bạn tìm kiếm, so sánh và đặt phòng khách sạn chỉ với vài thao tác, phù hợp cho cả công tác lẫn du lịch.
+                                    Giải pháp đặt phòng toàn diện – nhanh – đơn giản – minh bạch,
+                                    phù hợp cho du lịch, công tác và nghỉ dưỡng.
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-6">
-                        <div class="card shadow-sm border-0 h-100">
+                        <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="card-title text-primary">Đa dạng loại phòng</h6>
-                                <p class="card-text text-muted">
-                                    Từ phòng tiêu chuẩn đến suite cao cấp, nhiều mức giá và tiện nghi để bạn lựa chọn theo nhu cầu.
+                                <h6 class="fw-bold text-primary mb-2">
+                                    🛏️ Đa dạng loại phòng
+                                </h6>
+                                <p class="text-muted mb-0">
+                                    Nhiều phân khúc từ tiêu chuẩn đến cao cấp,
+                                    phù hợp mọi ngân sách và nhu cầu.
                                 </p>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-6">
-                        <div class="card shadow-sm border-0 h-100">
+                        <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="card-title text-primary">Đặt phòng linh hoạt</h6>
-                                <p class="card-text text-muted">
-                                    Kiểm tra tình trạng phòng theo ngày, đặt phòng trực tuyến 24/7 và xem lại thông tin đặt phòng bất cứ lúc nào.
+                                <h6 class="fw-bold text-primary mb-2">
+                                    ⏰ Đặt phòng linh hoạt
+                                </h6>
+                                <p class="text-muted mb-0">
+                                    Đặt phòng 24/7, kiểm tra tình trạng theo ngày
+                                    và quản lý booking dễ dàng.
                                 </p>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
         </div>
     </div>
 </section>
+
+<!-- FEATURED HOTELS -->
+@if (Model != null && Model.Any())
+{
+    <section class="py-5 bg-light">
+        <div class="container">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 fw-bold mb-0">
+                    ⭐ Khách sạn nổi bật
+                </h2>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @foreach (var h in Model)
+                {
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm hotel-card">
+
+                            @if (!string.IsNullOrEmpty(h.ImageUrl))
+                            {
+                                <img src="@h.ImageUrl"
+                                     alt="@h.Name"
+                                     class="card-img-top"
+                                     style="height:190px;object-fit:cover;" />
+                            }
+
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title fw-semibold mb-1">
+                                    @h.Name
+                                </h5>
+
+                                <p class="text-muted small mb-2">
+                                    📍 @h.Address, @h.City, @h.Country
+                                </p>
+
+                                <div class="mb-3">
+                                    <span class="badge bg-warning text-dark me-2">
+                                        ⭐ @h.Rating
+                                    </span>
+
+                                    @if (h.IsActive)
+                                    {
+                                        <span class="badge bg-success">
+                                            Đang hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            Ngừng nhận khách
+                                        </span>
+                                    }
+                                </div>
+
+                                <div class="mt-auto d-flex gap-2">
+                                    <a asp-controller="Hotels"
+                                       asp-action="Details"
+                                       asp-route-id="@h.HotelId"
+                                       class="btn btn-outline-primary btn-sm w-50">
+                                        Chi tiết
+                                    </a>
+
+                                    <a asp-controller="Rooms"
+                                       asp-action="ByHotel"
+                                       asp-route-hotelId="@h.HotelId"
+                                       asp-route-onlyAvailable="true"
+                                       class="btn btn-primary btn-sm w-50">
+                                        Xem phòng
+                                    </a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}

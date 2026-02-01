@@ -1,7 +1,15 @@
 ﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.FeedbackDto>
+
+@{
+    // Lấy RoleId từ claim (string), mặc định "3" nếu không có
+    var roleClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+    var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
+}
+
 <a asp-action="Create" class="btn btn-success mb-3">
-    Thêm feedback
+    Đánh giá
 </a>
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -23,30 +31,35 @@
                 <td>@item.Rating</td>
                 <td>@item.Comment</td>
                 <td>
+                    <!-- Ai cũng được xem chi tiết -->
                     <a asp-action="Details"
                        asp-route-id="@item.FeedbackId"
                        class="btn btn-sm btn-info me-1">
                         Chi tiết
                     </a>
-                    
 
-                    <a asp-action="Edit"
-                       asp-route-id="@item.FeedbackId"
-                       class="btn btn-sm btn-warning me-1">
-                        Sửa
-                    </a>
+                    @if (roleId == 1 || roleId == 2)
+                    {
+                        <!-- Role 1,2: được sửa và xoá -->
+                        <a asp-action="Edit"
+                           asp-route-id="@item.FeedbackId"
+                           class="btn btn-sm btn-warning me-1">
+                            Sửa
+                        </a>
 
-                    <form asp-action="Delete"
-                          asp-route-id="@item.FeedbackId"
-                          method="post"
-                          class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <button type="submit"
-                                class="btn btn-sm btn-danger"
-                                onclick="return confirm('Xoá feedback này?');">
-                            Xóa
-                        </button>
-                    </form>
+                        <form asp-action="Delete"
+                              asp-route-id="@item.FeedbackId"
+                              method="post"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Xoá feedback này?');">
+                                Xóa
+                            </button>
+                        </form>
+                    }
+                    <!-- Role 3: không hiện Sửa/Xoá -->
                 </td>
             </tr>
         }

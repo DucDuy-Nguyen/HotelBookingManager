@@ -1,98 +1,158 @@
 ﻿@model HotelBookingManager.Presentation.Models.HotelSearchViewModel
-@using System.Security.Claims
+
 @{
-    var roleClaim = User.FindFirst("RoleId")?.Value;
-    var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
+    var roleClaim = User.Claims
+        .FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+        ?.Value;
+
+    var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
 }
 
-<h2>Danh sách khách sạn</h2>
+<h2 class="mb-4">Danh sách khách sạn</h2>
 
-<form method="get" asp-action="Index">
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <input type="text"
-                   name="city"
-                   value="@Model.City"
-                   class="form-control"
-                   placeholder="Tìm theo thành phố" />
-        </div>
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Thành phố</label>
+                    <input type="text"
+                           name="city"
+                           value="@Model.City"
+                           class="form-control"
+                           placeholder="Nhập tên thành phố..." />
+                </div>
 
-        <div class="col-md-3">
-            <select name="statusFilter" class="form-select">
-                <option value="active" selected="@(Model.StatusFilter == "active")">
-                    Chỉ Active
-                </option>
-                <option value="inactive" selected="@(Model.StatusFilter == "inactive")">
-                    Chỉ Inactive
-                </option>
-                <option value="all" selected="@(Model.StatusFilter == "all")">
-                    Cả hai
-                </option>
-            </select>
-        </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="statusFilter" class="form-select">
+                        <option value="active"
+                                selected="@(Model.StatusFilter == "active")">
+                            Đang Hoạt Động
+                        </option>
+                        <option value="inactive"
+                                selected="@(Model.StatusFilter == "inactive")">
+                            Ngừng Hoạt Động
+                        </option>
+                        <option value="all"
+                                selected="@(Model.StatusFilter == "all")">
+                            Tất Cả
+                        </option>
+                    </select>
+                </div>
 
-        <div class="col-md-5">
-            <button class="btn btn-primary" type="submit">Search</button>
+                <div class="col-md-5 d-flex justify-content-end gap-2">
+                    <button class="btn btn-primary" type="submit">
+                        Tìm kiếm
+                    </button>
 
-            @if (isAdminOrStaff)
-            {
-                <a asp-action="Create" class="btn btn-success ms-2">Thêm khách sạn</a>
-            }
-        </div>
+                    @* Chỉ Admin được tạo khách sạn mới *@
+                    @if (roleId == 1)
+                    {
+                        <a asp-action="Create" class="btn btn-success">
+                            + Thêm khách sạn
+                        </a>
+                    }
+                </div>
+            </div>
+        </form>
     </div>
-</form>
+</div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Tên</th>
-            <th>Địa chỉ</th>
-            <th>Thành phố</th>
-            <th>Quốc gia</th>
-            <th>Rating</th>
-            <th>Active</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
+@if (Model.Hotels == null || !Model.Hotels.Any())
+{
+    <div class="alert alert-info">
+        Không tìm thấy khách sạn nào với bộ lọc hiện tại.
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 g-4">
         @foreach (var h in Model.Hotels)
         {
-            <tr>
-                <td>@h.Name</td>
-                <td>@h.Address</td>
-                <td>@h.City</td>
-                <td>@h.Country</td>
-                <td>@h.Rating</td>
-                <td>@h.IsActive</td>
-                <td>
-                    <!-- Public -->
-                    <a asp-action="Details" asp-route-id="@h.HotelId"
-                       class="btn btn-info btn-sm">Chi tiết</a>
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-4">
+                            @if (!string.IsNullOrEmpty(h.ImageUrl))
+                            {
+                                <img src="@h.ImageUrl"
+                                     alt="@h.Name"
+                                     class="img-fluid h-100 w-100"
+                                     style="object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <div class="bg-light d-flex align-items-center justify-content-center h-100 w-100 text-muted">
+                                    Không có ảnh
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body d-flex flex-column h-100">
+                                <div>
+                                    <h5 class="card-title mb-1">@h.Name</h5>
+                                    <p class="mb-1 text-muted">
+                                        @h.Address, @h.City, @h.Country
+                                    </p>
 
-                    <!-- Admin/Staff ONLY (RoleId 1,2) -->
-                    @if (isAdminOrStaff)
-                    {
-                        <a asp-action="Edit" asp-route-id="@h.HotelId"
-                           class="btn btn-warning btn-sm">Sửa</a>
-                        <a asp-action="Delete" asp-route-id="@h.HotelId"
-                           class="btn btn-danger btn-sm">Xóa</a>
-                    }
+                                    <div class="mb-2">
+                                        <span class="badge bg-warning text-dark me-2">
+                                            Rating: @h.Rating
+                                        </span>
+                                        @if (h.IsActive)
+                                        {
+                                            <span class="badge bg-success">Đang Hoạt Động</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Ngừng Hoạt Động</span>
+                                        }
+                                    </div>
+                                </div>
 
-                    <!-- Public -->
-                    <a asp-controller="Rooms" asp-action="ByHotel"
-                       asp-route-hotelId="@h.HotelId"
-                       asp-route-onlyAvailable="true"
-                       class="btn btn-sm btn-primary mt-1">
-                        Phòng còn trống
-                    </a>
-                    <a asp-controller="Rooms" asp-action="ByHotel"
-                       asp-route-hotelId="@h.HotelId"
-                       asp-route-onlyAvailable="false"
-                       class="btn btn-sm btn-secondary mt-1">
-                        Tất cả phòng
-                    </a>
-                </td>
-            </tr>
+                                <div class="mt-auto">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a asp-action="Details" asp-route-id="@h.HotelId"
+                                           class="btn btn-outline-info btn-sm">
+                                            Chi tiết
+                                        </a>
+
+                                        @* Admin + Staff đều được sửa / xóa,
+                                           nhưng controller đã check CanManageHotel *@
+                                        @if (roleId == 1 || roleId == 2)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@h.HotelId"
+                                               class="btn btn-outline-warning btn-sm">
+                                                Sửa
+                                            </a>
+
+                                            <a asp-action="Delete" asp-route-id="@h.HotelId"
+                                               class="btn btn-outline-danger btn-sm">
+                                                Xóa
+                                            </a>
+                                        }
+
+                                        <a asp-controller="Rooms" asp-action="ByHotel"
+                                           asp-route-hotelId="@h.HotelId"
+                                           asp-route-onlyAvailable="true"
+                                           class="btn btn-primary btn-sm">
+                                            Phòng còn trống
+                                        </a>
+
+                                        <a asp-controller="Rooms" asp-action="ByHotel"
+                                           asp-route-hotelId="@h.HotelId"
+                                           asp-route-onlyAvailable="false"
+                                           class="btn btn-secondary btn-sm">
+                                            Tất cả phòng
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>
+}

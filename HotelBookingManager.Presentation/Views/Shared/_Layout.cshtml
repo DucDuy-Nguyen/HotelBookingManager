@@ -1,8 +1,4 @@
-﻿@{
-    var roleId = User.FindFirst("RoleId")?.Value;
-}
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -15,7 +11,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HotelBooking.Presentation.styles.css" asp-append-version="true" />
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts (Roboto + Montserrat) -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@600;700&display=swap"
           rel="stylesheet">
 
@@ -32,6 +28,7 @@
             flex-direction: column;
         }
 
+        /* Navbar */
         .navbar-brand {
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
@@ -41,88 +38,166 @@
 
         .navbar {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.3s ease;
         }
 
         .navbar-light .navbar-nav .nav-link {
             color: #4b5563;
             font-weight: 500;
+            padding: 0.5rem 1rem;
         }
 
             .navbar-light .navbar-nav .nav-link:hover {
                 color: #2563eb;
             }
 
+        /* Buttons in navbar */
+        .btn-sm {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        .btn-outline-primary {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+            .btn-outline-primary:hover {
+                background-color: #2563eb;
+                color: #ffffff;
+            }
+
+        .btn-primary {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+
+            .btn-primary:hover {
+                background-color: #1d4ed8;
+                border-color: #1d4ed8;
+            }
+
+        .btn-outline-danger {
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+            .btn-outline-danger:hover {
+                background-color: #dc2626;
+                color: #ffffff;
+            }
+
+        /* Main content */
         .page-content {
             flex: 1 0 auto;
         }
 
+        .container {
+            max-width: 1200px;
+        }
+
+        /* Footer */
         footer {
             background-color: #ffffff;
             border-top: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+
+            footer a {
+                color: #4b5563;
+                text-decoration: none;
+                font-size: 0.9rem;
+            }
+
+                footer a:hover {
+                    color: #2563eb;
+                }
+        /* Hero section */
+        .hero-section {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: #ffffff;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+            .hero-section h1 {
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 700;
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .hero-section p {
+                font-size: 1.1rem;
+                opacity: 0.9;
+            }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+
+            .hero-section h1 {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
-
 <body>
+    @{
+        var roleClaim = User.Claims
+        .FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+        ?.Value;
+        var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
+    }
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-white">
             <div class="container">
-                <a class="navbar-brand text-primary"
-                   asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand text-primary" asp-area="" asp-controller="Home" asp-action="Index">
                     HotelBooking
                 </a>
 
-                <button class="navbar-toggler" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#mainNavbar">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar" aria-controls="mainNavbar"
+                        aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-                        <!-- Trang chủ -->
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Home"
-                               asp-action="Index">
-                                Trang chủ
-                            </a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
 
-                        <!-- Phòng (CHỈ ADMIN + STAFF) -->
-                        @if (roleId == "1" || roleId == "2")
+                        @* Chỉ role 1,2 mới thấy menu Phòng *@
+                        @if (roleId == 1 || roleId == 2)
                         {
                             <li class="nav-item">
-                                <a class="nav-link"
-                                   asp-controller="Rooms"
-                                   asp-action="Index">
-                                    Phòng
-                                </a>
+                                <a class="nav-link" asp-area="" asp-controller="Rooms" asp-action="Index">Phòng</a>
                             </li>
                         }
 
-                        <!-- Lịch sử đặt phòng -->
                         <li class="nav-item">
-                            <a class="nav-link"
-                               asp-controller="Bookings"
-                               asp-action="Index">
-                                Lịch sử đặt phòng
-                            </a>
+                            <a class="nav-link" asp-area="" asp-controller="Hotels" asp-action="Index">Khách sạn</a>
                         </li>
-
-                        <!-- Lịch sử thanh toán -->
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Feedbacks" asp-action="Index">Đánh giá</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Bookings" asp-action="Index">Đặt phòng của tôi</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link"
                                asp-controller="Payments"
                                asp-action="Index">
-                                Lịch sử thanh toán
+                                Thanh toán
                             </a>
                         </li>
 
+
                     </ul>
 
-                    <!-- AUTH -->
                     <ul class="navbar-nav mb-2 mb-lg-0">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -133,8 +208,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="btn btn-outline-danger btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Logout">
+                                   asp-controller="Account" asp-action="Logout">
                                     Đăng xuất
                                 </a>
                             </li>
@@ -143,54 +217,54 @@
                         {
                             <li class="nav-item me-2">
                                 <a class="btn btn-outline-primary btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Login">
+                                   asp-controller="Account" asp-action="Login">
                                     Đăng nhập
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="btn btn-primary btn-sm"
-                                   asp-controller="Account"
-                                   asp-action="Register">
+                                   asp-controller="Account" asp-action="Register">
                                     Đăng ký
                                 </a>
                             </li>
                         }
                     </ul>
-
                 </div>
             </div>
         </nav>
     </header>
 
-    @if (ViewContext.RouteData.Values["Controller"]?.ToString() == "Home"
-        && ViewContext.RouteData.Values["Action"]?.ToString() == "Index")
+    <!-- Hero section cho trang chủ (tuỳ chọn) -->
+    @if (ViewContext.RouteData.Values["Controller"].ToString() == "Home" &&
+        ViewContext.RouteData.Values["Action"].ToString() == "Index")
     {
-        <section class="hero-section text-center py-5 bg-primary text-white">
+        <section class="hero-section">
             <div class="container">
                 <h1>Đặt phòng khách sạn dễ dàng hơn bao giờ hết</h1>
-                <p>Tìm kiếm – So sánh – Đặt phòng trong vài phút</p>
+                <p>Tìm kiếm, so sánh và đặt phòng với mức giá tốt nhất chỉ trong vài cú nhấp chuột.</p>
             </div>
         </section>
     }
 
     <div class="container py-4 page-content">
-        <main role="main">
+        <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
     <footer class="text-muted mt-4">
-        <div class="container py-3 d-flex justify-content-between">
+        <div class="container py-3 d-flex justify-content-between align-items-center">
             <span>&copy; 2026 - Hotel Booking</span>
-            <a asp-controller="Home" asp-action="Privacy">Chính sách bảo mật</a>
+            <a asp-area="" asp-controller="Home" asp-action="Privacy" class="text-decoration-none">
+                Chính sách bảo mật
+            </a>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-
 </body>
 </html>

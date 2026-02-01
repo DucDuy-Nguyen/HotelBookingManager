@@ -1,14 +1,19 @@
 ﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.PaymentDto>
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Danh sách thanh toán";
+
+    var roleClaim = User.FindFirstValue(ClaimTypes.Role);
+    var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
+    var isAdminOrStaff = roleId == 1 || roleId == 2;
 }
 
-<h2 class="mb-3">💳 Danh sách Payments</h2>
+<h2 class="mb-3">💳 Danh sách thanh toán</h2>
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Chưa có payment nào.</div>
+    <div class="alert alert-info">Chưa có giao dịch thanh toán nào.</div>
 }
 else
 {
@@ -16,12 +21,12 @@ else
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-dark text-center">
                 <tr>
-                    <th>Mã GD</th>
+                    <th>Mã giao dịch</th>
                     <th>Số tiền</th>
                     <th>Phương thức</th>
                     <th>Trạng thái</th>
                     <th>Phòng</th>
-                    <th>Khách</th>
+                    <th>Khách hàng</th>
                     <th width="180">Thao tác</th>
                 </tr>
             </thead>
@@ -30,37 +35,45 @@ else
                 @foreach (var item in Model)
                 {
                     <tr>
-                        <td>@item.TransactionCode</td>
+                        <td>@(item.TransactionCode ?? "—")</td>
 
                         <td class="text-end">
                             @item.Amount.ToString("N0") VNĐ
                         </td>
 
                         <td class="text-center">
-                            <span class="badge bg-primary">@item.Method</span>
+                            <span class="badge bg-primary">
+                                @(item.Method == "Cash" ? "Tiền mặt"
+                                                        : item.Method == "VNPAY" ? "VNPay"
+                                                        : item.Method)
+                            </span>
                         </td>
 
                         <td class="text-center">
                             @{
                                 var status = item.Status;
                                 var badgeClass = "bg-secondary";
+                                var statusText = status;
 
-                                if (status == "Success" || status == "Paid")
+                                if (status == "Paid" || status == "Success")
                                 {
-                                    badgeClass = "bg-success"; // 🟢
+                                    badgeClass = "bg-success";
+                                    statusText = "Đã thanh toán";
                                 }
                                 else if (status == "Pending")
                                 {
-                                    badgeClass = "bg-warning text-dark"; // 🟡
+                                    badgeClass = "bg-warning text-dark";
+                                    statusText = "Chờ thanh toán";
                                 }
-                                else
+                                else if (status == "Failed")
                                 {
-                                    badgeClass = "bg-danger"; // 🔴
+                                    badgeClass = "bg-danger";
+                                    statusText = "Thất bại";
                                 }
                             }
 
                             <span class="badge @badgeClass">
-                                @status
+                                @statusText
                             </span>
                         </td>
 
@@ -69,18 +82,15 @@ else
 
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-
                                 <a asp-action="Details"
                                    asp-route-id="@item.PaymentId"
                                    class="btn btn-info">
                                     Chi tiết
                                 </a>
 
-                                @if (
-                                                        (User.IsInRole("Staff") || User.IsInRole("Admin"))
+                                @if (isAdminOrStaff
                                                         && item.Method == "Cash"
-                                                        && item.Status == "Pending"
-                                                        )
+                                                        && item.Status == "Pending")
                                 {
                                     <a asp-action="Pay"
                                        asp-route-paymentId="@item.PaymentId"

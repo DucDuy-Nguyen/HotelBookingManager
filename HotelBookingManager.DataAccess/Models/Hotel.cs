@@ -13,6 +13,8 @@ public class Hotel
     public string? Email { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool IsActive { get; set; }
+    public string? ImageUrl { get; set; } // để hiển thị ảnh
+
 
     public ICollection<Room> Rooms { get; set; } = new List<Room>();
     public ICollection<Booking> Bookings { get; set; } = new List<Booking>();

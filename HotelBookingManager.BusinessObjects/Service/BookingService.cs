@@ -11,18 +11,18 @@ namespace HotelBookingManager.BusinessObjects.Service
 {
     public class BookingService : IBookingService
     {
-        private readonly IBookingRepository _bookingRepository;
+        private readonly IBookingRepository _bookingRepo;
         private readonly IRoomService _roomService;
 
         public BookingService(
-            IBookingRepository bookingRepository,
+            IBookingRepository bookingRepo,
             IRoomService roomService)
         {
-            _bookingRepository = bookingRepository;
+            _bookingRepo = bookingRepo;
             _roomService = roomService;
         }
 
-        // ====== MAPPING ======
+        // ================= MAPPING =================
         private static BookingDto ToDto(Booking b) => new BookingDto
         {
             BookingId = b.BookingId,
@@ -32,13 +32,12 @@ namespace HotelBookingManager.BusinessObjects.Service
             CheckInDate = b.CheckInDate,
             CheckOutDate = b.CheckOutDate,
             Status = b.Status,
-            TotalPrice = b.TotalPrice
+            TotalPrice = b.TotalPrice,
+            CustomerName = b.User?.FullName,
+            HotelName = b.Hotel?.Name,
+            RoomNumber = b.Room?.RoomNumber
         };
-        public async Task<IEnumerable<BookingDto>> GetByUserAsync(int userId)
-        {
-            var list = await _bookingRepository.GetByUserAsync(userId);
-            return list.Select(ToDto);
-        }
+
         private static Booking ToEntity(BookingDto dto) => new Booking
         {
             BookingId = dto.BookingId,
@@ -51,59 +50,77 @@ namespace HotelBookingManager.BusinessObjects.Service
             TotalPrice = dto.TotalPrice
         };
 
-        // ====== IMPLEMENT IBookingService với DTO ======
-
+        // ================= CRUD =================
         public async Task<IEnumerable<BookingDto>> GetAllAsync()
-        {
-            var bookings = await _bookingRepository.GetAllAsync();
-            return bookings.Select(ToDto);
-        }
+            => (await _bookingRepo.GetAllAsync()).Select(ToDto);
 
         public async Task<IEnumerable<BookingDto>> GetByStatusAsync(string status)
-        {
-            var bookings = await _bookingRepository.GetByStatusAsync(status);
-            return bookings.Select(ToDto);
-        }
+            => (await _bookingRepo.GetByStatusAsync(status)).Select(ToDto);
 
-        public async Task<BookingDto?> GetByIdAsync(int id)
-        {
-            var booking = await _bookingRepository.GetByIdAsync(id);
-            return booking == null ? null : ToDto(booking);
-        }
+        public async Task<IEnumerable<BookingDto>> GetByUserAsync(int userId)
+            => (await _bookingRepo.GetByUserAsync(userId)).Select(ToDto);
 
-        public async Task<int> CreateAsync(BookingDto bookingDto)
+        public async Task<int> CreateAsync(BookingDto dto)
         {
-            var room = await _roomService.GetByIdAsync(bookingDto.RoomId);
-            if (room == null)
-                throw new Exception("Room not found");
+            var room = await _roomService.GetByIdAsync(dto.RoomId);
+            if (room == null) throw new Exception("Room not found");
 
-            var nights = (bookingDto.CheckOutDate.Date - bookingDto.CheckInDate.Date).TotalDays;
+            var nights = (dto.CheckOutDate - dto.CheckInDate).Days;
             if (nights <= 0) nights = 1;
 
-            var booking = ToEntity(bookingDto);
-
-            booking.TotalPrice = room.CurrentPrice * (decimal)nights;
+            var booking = ToEntity(dto);
+            booking.TotalPrice = room.CurrentPrice * nights;
             booking.Status = "Pending";
             booking.CreatedAt = DateTime.Now;
 
             room.Status = "Booked";
             await _roomService.UpdateAsync(room);
 
-            await _bookingRepository.AddAsync(booking);
-            await _bookingRepository.SaveChangesAsync();
+            await _bookingRepo.AddAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
+
+            return booking.BookingId;
+        }
+
+        // ⭐ QUAN TRỌNG: DÙNG USER ĐANG LOGIN
+        public async Task<int> QuickCreateAsync(int roomId, int hotelId, int days, int userId)
+        {
+            var room = await _roomService.GetByIdAsync(roomId);
+            if (room == null) throw new Exception("Room not found");
+            if (room.Status != "Available") throw new Exception("Room not available");
+
+            if (days <= 0) days = 1;
+
+            var booking = new Booking
+            {
+                HotelId = hotelId,
+                RoomId = roomId,
+                UserId = userId, // ✅ USER THẬT
+                CheckInDate = DateTime.Today.AddDays(1),
+                CheckOutDate = DateTime.Today.AddDays(1 + days),
+                Status = "PendingPayment",
+                TotalPrice = room.CurrentPrice * days,
+                CreatedAt = DateTime.Now
+            };
+
+            room.Status = "Booked";
+            await _roomService.UpdateAsync(room);
+
+            await _bookingRepo.AddAsync(booking);
+            await _bookingRepo.SaveChangesAsync();
 
             return booking.BookingId;
         }
 
         public async Task ChangeStatusAsync(int bookingId, string newStatus)
         {
-            var booking = await _bookingRepository.GetByIdAsync(bookingId);
+            var booking = await _bookingRepo.GetByIdAsync(bookingId);
             if (booking == null) return;
 
             booking.Status = newStatus;
-            _bookingRepository.Update(booking);
+            _bookingRepo.Update(booking);
 
-            if (newStatus == "CheckedOut" || newStatus == "Cancelled")
+            if (newStatus == "Cancelled" || newStatus == "CheckedOut")
             {
                 var room = await _roomService.GetByIdAsync(booking.RoomId);
                 if (room != null)
@@ -113,7 +130,8 @@ namespace HotelBookingManager.BusinessObjects.Service
                 }
             }
 
-            await _bookingRepository.SaveChangesAsync();
+            await _bookingRepo.SaveChangesAsync();
         }
+
     }
 }

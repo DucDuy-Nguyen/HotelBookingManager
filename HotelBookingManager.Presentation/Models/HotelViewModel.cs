@@ -12,6 +12,8 @@
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }
         public bool IsActive { get; set; } = true;
+        public string? ImageUrl { get; set; }  // thêm
+
     }
 
     public class HotelSearchViewModel
