@@ -1,0 +1,161 @@
+﻿@{
+    ViewData["Title"] = "Đề Xuất Phòng AI";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold mb-3">
+                    🤖 Trợ Lý Đề Xuất Hotel & Phòng Thông Minh
+                </h1>
+                <p class="lead text-muted">
+                    Chỉ cần mô tả yêu cầu của bạn, AI sẽ tìm kiếm và gợi ý
+                    <strong>khách sạn và phòng phù hợp nhất</strong> cho bạn
+                </p>
+            </div>
+
+            <div class="card border-0 shadow-lg p-4">
+                <form id="recommendationForm">
+                    <div class="mb-4">
+                        <label for="preferences" class="form-label fw-bold fs-5">
+                            📝 Mô Tả Yêu Cầu Của Bạn
+                        </label>
+                        <textarea id="preferences"
+                                  class="form-control form-control-lg"
+                                  rows="6"
+                                  placeholder="Ví dụ: Tôi cần một khách sạn 5 sao ở TPHCM, gần trung tâm, có phòng view sông, giá dưới 3 triệu/đêm, có hồ bơi và gym, phòng tối thiểu 30m2..."
+                                  required
+                                  style="border-radius: 10px; border: 2px solid #e0e0e0;"></textarea>
+                        <small class="text-muted d-block mt-2">
+                            💡 Tip: Mô tả chi tiết càng nhiều (vị trí, giá, tiện ích, loại phòng, số người, ngày ở, v.v.)
+                            thì AI sẽ gợi ý càng chính xác
+                        </small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3"
+                            style="border-radius: 10px; font-size: 1.1rem;">
+                        <i class="fas fa-wand-magic-sparkles"></i> Tìm Giải Pháp Tốt Nhất
+                    </button>
+                </form>
+
+                <div id="loadingSpinner" style="display: none;" class="mt-5 text-center">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="text-muted fs-5">⏳ AI đang phân tích yêu cầu của bạn...</p>
+                    <p class="text-muted small">Điều này có thể mất vài giây...</p>
+                </div>
+
+                <div id="recommendationResult" class="mt-5" style="display: none;">
+                    <div class="alert alert-success border-0 p-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <h5 class="alert-heading fw-bold fs-4 mb-3">
+                            ✨ Đề Xuất Từ AI Gemini
+                        </h5>
+                    </div>
+                    <div id="recommendationContent" class="mt-4"></div>
+                </div>
+
+                <div id="errorMessage" class="alert alert-danger border-0 mt-5" style="display: none; border-radius: 10px;">
+                    <strong>❌ Lỗi:</strong>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+
+            <!-- TIPS CARD -->
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-primary mb-3">
+                                💡 Mẹo Để Nhận Đề Xuất Tốt Nhất
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>✅ Nêu rõ thành phố/khu vực mong muốn</li>
+                                <li>✅ Nêu ngân sách (giá tối đa/tối thiểu)</li>
+                                <li>✅ Số người ở và ngày nhận phòng</li>
+                                <li>✅ Loại phòng (thường, VIP, suite)</li>
+                                <li>✅ Tiện ích quan trọng (wifi, bể bơi, gym)</li>
+                                <li>✅ Vị trí (gần trung tâm, yên tĩnh, v.v.)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-success mb-3">
+                                📌 Ví Dụ Yêu Cầu Chi Tiết
+                            </h6>
+                            <p class="small mb-0 text-muted">
+                                <em>
+                                    "Tôi cần khách sạn 4-5 sao ở Quận 1, TPHCM.
+                                    Ngân sách 2-3 triệu/đêm. Có phòng đôi view sông Sài Gòn.
+                                    Tối thiểu 35m2. Phải có hồ bơi, gym, nhà hàng.
+                                    Gần tàu điện ngầm hoặc phố đi bộ. Check-in ngày 15/2/2026,
+                                    stay 3 đêm cho 2 người."
+                                </em>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('recommendationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const preferences = document.getElementById('preferences').value.trim();
+
+        if (!preferences) {
+            alert('Vui lòng nhập yêu cầu của bạn');
+            return;
+        }
+
+        // Hiển thị loading
+        document.getElementById('loadingSpinner').style.display = 'block';
+        document.getElementById('recommendationResult').style.display = 'none';
+        document.getElementById('errorMessage').style.display = 'none';
+
+        try {
+            const response = await fetch('/api/recommendation/get-suggestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    preferences: preferences
+                })
+            });
+
+            document.getElementById('loadingSpinner').style.display = 'none';
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Có lỗi xảy ra');
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                document.getElementById('recommendationContent').innerHTML = data.recommendations;
+                document.getElementById('recommendationResult').style.display = 'block';
+
+                // Scroll đến kết quả
+                document.getElementById('recommendationResult').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('errorText').textContent = error.message;
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+    });
+</script>

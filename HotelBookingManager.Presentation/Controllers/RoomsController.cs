@@ -214,7 +214,12 @@ namespace HotelBookingManager.Presentation.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
+        public async Task<IActionResult> Recommendations()
+        {
+            var hotels = await _hotelService.GetAllAsync();
+            ViewBag.Hotels = new SelectList(hotels, "HotelId", "Name");
+            return View();
+        }
         // =======================
         // GET: Rooms/Delete/5
         // =======================

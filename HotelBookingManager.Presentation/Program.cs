@@ -5,6 +5,7 @@ using HotelBookingManager.BusinessObjects.Service;
 using HotelBookingManager.BusinessObjects.Services;
 using HotelBookingManager.DataAccess.IRepositories;
 using HotelBookingManager.DataAccess.Repositories;
+using HotelBookingManager.Presentation.Controllers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
 
 builder.Services.AddScoped<IRoomTypeService, RoomTypeService>();
 builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();

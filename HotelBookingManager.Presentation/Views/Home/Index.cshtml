@@ -1,10 +1,4 @@
-﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.HotelDto>
-
-@{
-    ViewData["Title"] = "Trang chủ";
-}
-
-<!-- HERO -->
+﻿<!-- HERO -->
 <section class="py-5 position-relative text-white"
          style="
             min-height: 75vh;
@@ -44,184 +38,136 @@
                         </div>
                     </div>
 
-            <!-- Hero text -->
-            <div class="col-lg-6">
-                <span class="badge bg-primary mb-3 px-3 py-2">
-                    Nền tảng đặt phòng trực tuyến
-                </span>
-
-                <h1 class="display-4 fw-bold mb-3">
-                    Đặt phòng khách sạn <br /> nhanh chóng & tiện lợi
-                </h1>
-
-                <p class="lead text-light opacity-75 mb-4">
-                    Tìm kiếm, so sánh và đặt phòng khách sạn phù hợp cho chuyến đi của bạn.
-                    Xác nhận tức thì – quản lý hoàn toàn online.
-                </p>
-
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                    <div class="mb-3">
-                        👋 Xin chào
-                        <strong>@User.Identity.Name</strong>
-                        <span class="opacity-75">
-                            (@User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value)
+                    <!-- Hero text -->
+                    <div class="col-lg-6">
+                        <span class="badge bg-primary mb-3 px-3 py-2">
+                            Nền tảng đặt phòng trực tuyến
                         </span>
-                    </div>
 
-                    <div class="d-flex flex-wrap gap-2">
-                        <a asp-controller="Rooms"
-                           asp-action="Index"
-                           class="btn btn-primary btn-lg">
-                            🔍 Khám phá phòng
-                        </a>
+                        <h1 class="display-4 fw-bold mb-3">
+                            Đặt phòng khách sạn <br /> nhanh chóng & tiện lợi
+                        </h1>
 
-                        <a asp-controller="Bookings"
-                           asp-action="Create"
-                           class="btn btn-outline-light btn-lg">
-                            🏨 Đặt phòng ngay
-                        </a>
-                    </div>
-                }
-                else
-                {
-                    <a asp-controller="Account"
-                       asp-action="Register"
-                       class="btn btn-primary btn-lg px-4">
-                        🚀 Bắt đầu đặt phòng
-                    </a>
-                }
-            </div>
+                        <p class="lead text-light opacity-75 mb-4">
+                            Tìm kiếm, so sánh và đặt phòng khách sạn phù hợp cho chuyến đi của bạn.
+                            Xác nhận tức thì – quản lý hoàn toàn online.
+                        </p>
 
-            <!-- Features -->
-            <div class="col-lg-6">
-                <div class="row g-3">
-
-                    <div class="col-12">
-                        <div class="card border-0 shadow-lg">
-                            <div class="card-body">
-                                <h5 class="card-title fw-bold mb-2">
-                                    Vì sao chọn Hotel Booking?
-                                </h5>
-                                <p class="card-text text-muted mb-0">
-                                    Giải pháp đặt phòng toàn diện – nhanh – đơn giản – minh bạch,
-                                    phù hợp cho du lịch, công tác và nghỉ dưỡng.
-                                </p>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="mb-3">
+                                👋 Xin chào
+                                <strong>@User.Identity.Name</strong>
+                                <span class="opacity-75">
+                                    (@User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value)
+                                </span>
                             </div>
-                        </div>
+
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-controller="Rooms"
+                                   asp-action="Index"
+                                   class="btn btn-primary btn-lg">
+                                    🔍 Khám phá phòng
+                                </a>
+
+                                <a asp-controller="Bookings"
+                                   asp-action="Create"
+                                   class="btn btn-outline-light btn-lg">
+                                    🏨 Đặt phòng ngay
+                                </a>
+
+                                <!-- ✨ NÚT GỢI Ý PHÒNG THÔNG MINH ✨ -->
+                                <a asp-controller="Rooms"
+                                   asp-action="Recommendations"
+                                   class="btn btn-warning btn-lg fw-semibold">
+                                    🤖 Gợi ý phòng AI
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-wrap gap-2">
+                                <a asp-controller="Account"
+                                   asp-action="Register"
+                                   class="btn btn-primary btn-lg px-4">
+                                    🚀 Bắt đầu đặt phòng
+                                </a>
+
+                                <!-- ✨ NÚT GỢI Ý PHÒNG CHO USER CHƯA ĐĂNG NHẬP ✨ -->
+                                <a asp-controller="Rooms"
+                                   asp-action="Recommendations"
+                                   class="btn btn-warning btn-lg fw-semibold">
+                                    🤖 Gợi ý phòng AI
+                                </a>
+                            </div>
+                        }
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="fw-bold text-primary mb-2">
-                                    🛏️ Đa dạng loại phòng
-                                </h6>
-                                <p class="text-muted mb-0">
-                                    Nhiều phân khúc từ tiêu chuẩn đến cao cấp,
-                                    phù hợp mọi ngân sách và nhu cầu.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Features -->
+                    <div class="col-lg-6">
+                        <div class="row g-3">
 
-                    <div class="col-md-6">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="fw-bold text-primary mb-2">
-                                    ⏰ Đặt phòng linh hoạt
-                                </h6>
-                                <p class="text-muted mb-0">
-                                    Đặt phòng 24/7, kiểm tra tình trạng theo ngày
-                                    và quản lý booking dễ dàng.
-                                </p>
+                            <div class="col-12">
+                                <div class="card border-0 shadow-lg">
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold mb-2">
+                                            Vì sao chọn Hotel Booking?
+                                        </h5>
+                                        <p class="card-text text-muted mb-0">
+                                            Giải pháp đặt phòng toàn diện – nhanh – đơn giản – minh bạch,
+                                            phù hợp cho du lịch, công tác và nghỉ dưỡng.
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-primary mb-2">
+                                            🛏️ Đa dạng loại phòng
+                                        </h6>
+                                        <p class="text-muted mb-0">
+                                            Nhiều phân khúc từ tiêu chuẩn đến cao cấp,
+                                            phù hợp mọi ngân sách và nhu cầu.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-primary mb-2">
+                                            ⏰ Đặt phòng linh hoạt
+                                        </h6>
+                                        <p class="text-muted mb-0">
+                                            Đặt phòng 24/7, kiểm tra tình trạng theo ngày
+                                            và quản lý booking dễ dàng.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold mb-2">
+                                            🤖 Gợi ý phòng thông minh với AI
+                                        </h6>
+                                        <p class="mb-0 opacity-90">
+                                            Chỉ cần mô tả yêu cầu của bạn, AI sẽ phân tích và gợi ý
+                                            hotel cùng phòng phù hợp nhất với nhu cầu của bạn.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
                 </div>
             </div>
-
         </div>
     </div>
 </section>
-
-<!-- FEATURED HOTELS -->
-@if (Model != null && Model.Any())
-{
-    <section class="py-5 bg-light">
-        <div class="container">
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="h4 fw-bold mb-0">
-                    ⭐ Khách sạn nổi bật
-                </h2>
-            </div>
-
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-                @foreach (var h in Model)
-                {
-                    <div class="col">
-                        <div class="card h-100 border-0 shadow-sm hotel-card">
-
-                            @if (!string.IsNullOrEmpty(h.ImageUrl))
-                            {
-                                <img src="@h.ImageUrl"
-                                     alt="@h.Name"
-                                     class="card-img-top"
-                                     style="height:190px;object-fit:cover;" />
-                            }
-
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title fw-semibold mb-1">
-                                    @h.Name
-                                </h5>
-
-                                <p class="text-muted small mb-2">
-                                    📍 @h.Address, @h.City, @h.Country
-                                </p>
-
-                                <div class="mb-3">
-                                    <span class="badge bg-warning text-dark me-2">
-                                        ⭐ @h.Rating
-                                    </span>
-
-                                    @if (h.IsActive)
-                                    {
-                                        <span class="badge bg-success">
-                                            Đang hoạt động
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">
-                                            Ngừng nhận khách
-                                        </span>
-                                    }
-                                </div>
-
-                                <div class="mt-auto d-flex gap-2">
-                                    <a asp-controller="Hotels"
-                                       asp-action="Details"
-                                       asp-route-id="@h.HotelId"
-                                       class="btn btn-outline-primary btn-sm w-50">
-                                        Chi tiết
-                                    </a>
-
-                                    <a asp-controller="Rooms"
-                                       asp-action="ByHotel"
-                                       asp-route-hotelId="@h.HotelId"
-                                       asp-route-onlyAvailable="true"
-                                       class="btn btn-primary btn-sm w-50">
-                                        Xem phòng
-                                    </a>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </section>
-}
