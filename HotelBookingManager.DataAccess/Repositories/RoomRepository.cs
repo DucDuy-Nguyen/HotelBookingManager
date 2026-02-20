@@ -72,6 +72,7 @@ namespace HotelBookingManager.DataAccess.Repositories
             return _dbSet
                 .Include(r => r.Hotel)
                 .Include(r => r.RoomType)
+                .Include(r => r.RoomImages.Where(i => i.IsActive)) 
                 .FirstOrDefaultAsync(r => r.RoomId == id);
         }
 

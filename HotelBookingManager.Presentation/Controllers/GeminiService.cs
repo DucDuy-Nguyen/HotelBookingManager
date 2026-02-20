@@ -1,133 +1,116 @@
-﻿using GenerativeAI;
-using HotelBookingManager.BusinessObjects.DTO;
+﻿using HotelBookingManager.BusinessObjects.DTO;
 using HotelBookingManager.BusinessObjects.IService;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 
-namespace HotelBookingManager.Presentation.Controllers
+public class GeminiService : IGeminiService
 {
-    public class GeminiService : IGeminiService
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+
+    public GeminiService(IConfiguration configuration, IHttpClientFactory httpClientFactory)
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _apiKey;
+        _apiKey = configuration["Gemini:ApiKey"]
+            ?? throw new InvalidOperationException("Thiếu Gemini:ApiKey");
 
-        public GeminiService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-            _apiKey = _configuration["Gemini:ApiKey"];
+        _httpClient = httpClientFactory.CreateClient();
+    }
 
-            if (string.IsNullOrEmpty(_apiKey))
-            {
-                throw new InvalidOperationException(
-                    "Gemini:ApiKey không được tìm thấy trong appsettings.json. " +
-                    "Vui lòng thêm: \"Gemini\": { \"ApiKey\": \"YOUR_API_KEY\" }");
-            }
-        }
+    public async Task<string> GetHotelAndRoomRecommendationsAsync(
+        IEnumerable<HotelDto> allHotels,
+        IEnumerable<RoomDto> allRooms,
+        string customerPreferences)
+    {
+        var hotelsJson = JsonSerializer.Serialize(allHotels);
+        var roomsJson = JsonSerializer.Serialize(allRooms);
 
-        public async Task<string> GetHotelAndRoomRecommendationsAsync(
-            IEnumerable<HotelDto> allHotels,
-            IEnumerable<RoomDto> allRooms,
-            string customerPreferences)
-        {
-            try
-            {
-                // Chuẩn bị dữ liệu hotel
-                var hotelsList = allHotels.Select(h => new
-                {
-                    h.HotelId,
-                    h.Name,
-                    h.Address,
-                    h.City,
-                    h.Country,
-                    h.Rating,
-                    h.IsActive
-                }).ToList();
+        var prompt = $@"
+Bạn là trợ lý AI giúp khách hàng chọn khách sạn và phòng phù hợp nhất.
 
-                // Chuẩn bị dữ liệu phòng
-                var roomsList = allRooms.Select(r => new
-                {
-                    r.RoomId,
-                    r.RoomNumber,
-                    r.HotelId,
-                    r.RoomTypeName,
-                    r.CurrentPrice,
-                    r.Floor,
-                    r.Status
-                }).ToList();
-
-                var hotelsJson = JsonSerializer.Serialize(
-                    hotelsList,
-                    new JsonSerializerOptions { WriteIndented = true });
-
-                var roomsJson = JsonSerializer.Serialize(
-                    roomsList,
-                    new JsonSerializerOptions { WriteIndented = true });
-
-                var prompt = $@"
-Bạn là một trợ lý AI giúp khách hàng tìm hotel và phòng phù hợp nhất với yêu cầu của họ.
-
-DANH SÁCH TẤT CẢ CÁC KHÁCH SẠN CÓ SẴN:
+DANH SÁCH KHÁCH SẠN (CÓ HotelId):
 {hotelsJson}
 
-DANH SÁCH TẤT CẢ CÁC PHÒNG CÓ SẴN:
+DANH SÁCH PHÒNG (CÓ RoomId, HotelId):
 {roomsJson}
 
-YÊU CẦU CỦA KHÁCH HÀNG:
+YÊU CẦU KHÁCH HÀNG:
 {customerPreferences}
 
-HƯỚNG DẪN:
-1. Phân tích yêu cầu của khách hàng một cách chi tiết
-2. Dựa trên yêu cầu, tìm hotel(s) phù hợp nhất
-3. Với mỗi hotel được chọn, tìm các phòng phù hợp nhất
-4. Đề xuất TOP 3 GIẢI PHÁP TỐT NHẤT (mỗi giải pháp gồm 1 hotel + 1-2 phòng)
-5. Giải thích rõ lý do tại sao mỗi giải pháp phù hợp
-6. Liệt kê chi tiết: Tên hotel, địa chỉ, phòng, giá, vị trí phòng (tầng)
-7. Trả lời bằng tiếng Việt
+NHIỆM VỤ:
+1. Phân tích yêu cầu khách hàng
+2. Chọn TOP 3 GIẢI PHÁP TỐT NHẤT
+3. Mỗi giải pháp gồm:
+   - 1 khách sạn
+   - 1 phòng cụ thể từ danh sách trên
 
-ĐỊNH DẠNG RESPONSE:
-Sử dụng HTML với các tag <h3>, <h4>, <p>, <ul>, <li>, <strong> để dễ hiển thị trên web.
-Không sử dụng markdown, chỉ dùng HTML thuần.
+⚠️ BẮT BUỘC:
+- CHỈ sử dụng RoomId và HotelId có trong dữ liệu
+- TUYỆT ĐỐI KHÔNG bịa ID
+- Với mỗi phòng, hiển thị HAI NÚT như sau:
 
-GỢI Ý STRUCTURE:
-<h3>✨ Đề Xuất #1: Tên Hotel</h3>
-<p><strong>Địa chỉ:</strong> ...</p>
-<p><strong>Đánh giá:</strong> ⭐ ...</p>
-<h4>Phòng Gợi Ý:</h4>
-<ul>
-  <li><strong>Phòng #101</strong> - Loại phòng - Tầng 1 - <strong>Giá: XXX VNĐ</strong></li>
-  <li>Lý do: ...</li>
-</ul>
-<p><strong>Tổng thể:</strong> ...</p>
+<div class='d-flex gap-2 mt-2'>
+    <button class='btn btn-success book-room'
+            data-room-id='ROOM_ID'
+            data-hotel-id='HOTEL_ID'>
+        Đặt phòng ngay
+    </button>
+
+    <button class='btn btn-outline-primary room-detail'
+            data-room-id='ROOM_ID'>
+        Xem chi tiết
+    </button>
+</div>
+
+ĐỊNH DẠNG KẾT QUẢ:
+- Trả về HTML THUẦN
+- KHÔNG markdown
+- Dùng <h3>, <p>, <ul>, <li>, <strong>, <button>
+- Viết bằng tiếng Việt
 ";
 
-                // Dùng GoogleAi class
-                var googleAI = new GoogleAi(_apiKey);
-                var model = googleAI.CreateGenerativeModel("gemini-pro");
-
-                // Gọi API
-                var response = await model.GenerateContentAsync(prompt);
-
-                // Lấy text từ response
-                var result = response?.Text();
-
-                if (string.IsNullOrEmpty(result))
+        var requestBody = new
+        {
+            contents = new[]
+            {
+                new
                 {
-                    return "❌ Không thể tạo đề xuất lúc này. Vui lòng thử lại sau.";
+                    parts = new[]
+                    {
+                        new { text = prompt }
+                    }
                 }
+            }
+        };
 
-                return result;
-            }
-            catch (ArgumentException ex) when (ex.Message.Contains("API key"))
-            {
-                return $"❌ Lỗi API key: {ex.Message}<br/>Vui lòng kiểm tra appsettings.json";
-            }
-            catch (HttpRequestException ex)
-            {
-                return $"❌ Lỗi kết nối tới Gemini API: {ex.Message}";
-            }
-            catch (Exception ex)
-            {
-                return $"❌ Lỗi khi xử lý yêu cầu: {ex.Message}";
-            }
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key={_apiKey}"
+        )
+        {
+            Content = new StringContent(
+                JsonSerializer.Serialize(requestBody),
+                Encoding.UTF8,
+                "application/json")
+        };
+
+        var response = await _httpClient.SendAsync(request);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            return $"❌ Gemini API lỗi: {error}";
         }
+
+        var json = await response.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+
+        return doc.RootElement
+            .GetProperty("candidates")[0]
+            .GetProperty("content")
+            .GetProperty("parts")[0]
+            .GetProperty("text")
+            .GetString()
+            ?? "❌ Gemini không trả về nội dung";
     }
 }

@@ -177,6 +177,14 @@
                                 <a class="nav-link" asp-area="" asp-controller="Rooms" asp-action="Index">Phòng</a>
                             </li>
                         }
+                        @if (roleId == 1)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Users" asp-action="Index">
+                                    Quản lý người dùng
+                                </a>
+                            </li>
+                        }
 
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-controller="Hotels" asp-action="Index">Khách sạn</a>

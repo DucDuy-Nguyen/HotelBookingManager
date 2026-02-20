@@ -5,94 +5,224 @@
     int hotelId = ViewBag.HotelId;
 }
 
-<h4 class="mb-3">
-    🛏️ Danh sách phòng
-    <span class="badge bg-success">@(onlyAvailable ? "Còn trống" : "Tất cả")</span>
-</h4>
-
-<div class="mb-3">
-    <div class="btn-group" role="group">
-        <a asp-action="ByHotel"
-           asp-route-hotelId="@hotelId"
-           asp-route-onlyAvailable="true"
-           class="btn @(onlyAvailable ? "btn-success" : "btn-outline-success")">
-            Chỉ Available
-        </a>
-
-        <a asp-action="ByHotel"
-           asp-route-hotelId="@hotelId"
-           asp-route-onlyAvailable="false"
-           class="btn @(onlyAvailable ? "btn-outline-primary" : "btn-primary")">
-            Tất cả phòng
-        </a>
+<div class="py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">
+                🛏️ Danh sách phòng
+                <span class="badge bg-success fs-6">@(onlyAvailable ? "Còn trống" : "Tất cả")</span>
+            </h4>
+            <small class="text-muted">@Model.Count() phòng</small>
+        </div>
+        
+        <div class="btn-group btn-group-sm" role="group">
+            <a asp-action="ByHotel"
+               asp-route-hotelId="@hotelId"
+               asp-route-onlyAvailable="true"
+               class="btn @(onlyAvailable ? "btn-success" : "btn-outline-success")">
+                <i class="fas fa-check-circle me-1"></i>Chỉ Available
+            </a>
+            <a asp-action="ByHotel"
+               asp-route-hotelId="@hotelId"
+               asp-route-onlyAvailable="false"
+               class="btn @(onlyAvailable ? "btn-outline-primary" : "btn-primary")">
+                <i class="fas fa-list me-1"></i>Tất cả (@Model.Count())
+            </a>
+        </div>
     </div>
-</div>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">
-        Không có phòng phù hợp
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Số phòng</th>
-                    <th>Tầng</th>
-                    <th>Loại</th>
-                    <th>Giá / đêm</th>
-                    <th>Trạng thái</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var room in Model)
-                {
-                    <tr class="@(room.Status == "Available" ? "table-success" : "")">
-                        <td class="fw-bold">@room.RoomNumber</td>
-                        <td>@room.Floor</td>
-                        <td>@room.RoomTypeId</td>
-                        <td class="fw-bold text-success">
-                            @room.CurrentPrice.ToString("N0") VNĐ
-                        </td>
-                        <td>
-                            @if (room.Status == "Available")
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-bed fa-3x mb-3 opacity-75"></i>
+            <h5>Không có phòng phù hợp</h5>
+            <p class="mb-0">Khách sạn này hiện không có phòng trống hoặc chưa được thêm phòng.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var room in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm hover-lift">
+                        <!-- 🖼️ THUMBNAIL -->
+                        <div class="position-relative overflow-hidden">
+                            @if (!string.IsNullOrEmpty(room.FirstImageUrl))
                             {
-                                <span class="badge bg-success">Available</span>
+                                <img src="@room.FirstImageUrl" 
+                                     class="card-img-top room-thumb"
+                                     alt="Phòng @room.RoomNumber"
+                                     onerror="this.src='/images/no-image-room.jpg'"
+                                     data-bs-toggle="modal" 
+                                     data-bs-target="#roomModal@(room.RoomId)"
+                                     style="height: 200px; object-fit: cover;" />
+                                
+                                @if (room.RoomImagesCount > 1)
+                                {
+                                    <span class="position-absolute top-2 start-2 badge bg-primary badge-pill z-3">
+                                        +@(room.RoomImagesCount - 1)
+                                    </span>
+                                }
                             }
                             else
                             {
-                                <span class="badge bg-secondary">@room.Status</span>
+                                <div class="bg-light d-flex align-items-center justify-content-center" 
+                                     style="height: 200px;">
+                                    <i class="fas fa-image fa-3x text-muted"></i>
+                                </div>
                             }
-                        </td>
-                        <td>
-                            @if (room.Status == "Available")
-                            {
-                                <a asp-controller="Bookings"
-                                   asp-action="Create"
-                                   asp-route-roomId="@room.RoomId"
-                                   asp-route-hotelId="@hotelId"
-                                   class="btn btn-primary">
-                                    Đặt phòng
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title fw-bold mb-2">@room.RoomNumber</h6>
+                            
+                            <div class="mb-2">
+                                <small class="text-muted">Loại:</small><br />
+                                <span class="badge bg-warning text-dark">@room.RoomTypeName</span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">Tầng:</small> 
+                                <span class="badge bg-light text-dark">@(room.Floor ?? 0)</span>
+                            </div>
+
+                            <!-- 💰 GIÁ NỔI BẬT -->
+                            <div class="flex-grow-1"></div>
+                            <div class="mb-3 text-center py-2 bg-light rounded">
+                                <div class="h5 fw-bold text-success mb-0">
+                                    @room.CurrentPrice.ToString("N0")<small class="fs-6"> VNĐ</small>
+                                </div>
+                            </div>
+
+                            <!-- TRẠNG THÁI -->
+                            <div class="mb-3">
+                                @if (room.Status == "Available")
+                                {
+                                    <span class="badge bg-success fs-6 w-100">
+                                        <i class="fas fa-check-circle me-1"></i> Còn trống
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary fs-6 w-100">@room.Status</span>
+                                }
+                            </div>
+
+                            <!-- BUTTONS -->
+                            <div class="btn-group-vertical btn-group-sm w-100" role="group">
+                                <a asp-controller="Rooms"
+                                   asp-action="Details"
+                                   asp-route-id="@room.RoomId"
+                                   class="btn btn-outline-primary mb-1">
+                                    <i class="fas fa-eye me-1"></i>Chi tiết
                                 </a>
-                            }
-                            else
-                            {
-                                <button class="btn btn-outline-secondary" disabled>
-                                    Không khả dụng
-                                </button>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+                                @if (room.Status == "Available")
+                                {
+                                    <a asp-controller="Bookings"
+                                       asp-action="Create"
+                                       asp-route-roomId="@room.RoomId"
+                                       asp-route-hotelId="@hotelId"
+                                       class="btn btn-success mb-1">
+                                        <i class="fas fa-calendar-check me-1"></i>Đặt ngay
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-secondary mb-1" disabled>
+                                        <i class="fas fa-clock me-1"></i>Đã đặt
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 🆕 MODAL XEM ẢNH LỚN -->
+                    @if (!string.IsNullOrEmpty(room.FirstImageUrl) && room.RoomImages != null && room.RoomImages.Any())
+                    {
+                        <div class="modal fade" id="roomModal@(room.RoomId)" tabindex="-1">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg">
+                                    <div class="modal-header bg-primary text-white border-0">
+                                        <h6 class="modal-title mb-0">
+                                            🖼️ Phòng @room.RoomNumber
+                                            <span class="badge bg-light text-dark ms-2">@room.RoomImagesCount ảnh</span>
+                                        </h6>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body p-0">
+                                        <div id="roomImageCarousel@(room.RoomId)" class="carousel slide h-100" data-bs-ride="carousel">
+                                            <div class="carousel-inner">
+                                                @for (int i = 0; i < room.RoomImages.Count; i++)
+                                                {
+                                                    var img = room.RoomImages[i];
+                                                    <div class="carousel-item @(i == 0 ? "active" : "") h-100">
+                                                        <img src="@img.ImageUrl" 
+                                                             class="d-block w-100 h-100"
+                                                             style="object-fit: cover; height: 400px;"
+                                                             alt="Ảnh phòng @room.RoomNumber"
+                                                             onerror="this.src='/images/no-image-room.jpg'" />
+                                                        @if (img.IsThumbnail)
+                                                        {
+                                                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded px-2">
+                                                                ⭐ Ảnh chính
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                            @if (room.RoomImages.Count > 1)
+                                            {
+                                                <button class="carousel-control-prev" type="button" 
+                                                        data-bs-target="#roomImageCarousel@(room.RoomId)" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon"></span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" 
+                                                        data-bs-target="#roomImageCarousel@(room.RoomId)" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon"></span>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <div class="text-center mt-4">
+        <a asp-controller="Hotels" asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+            <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách khách sạn
+        </a>
     </div>
+
+<style>
+.hover-lift {
+    transition: all 0.3s ease;
 }
 
-<a asp-controller="Hotels" asp-action="Index" class="btn btn-outline-secondary mt-3">
-    ← Quay lại khách sạn
-</a>
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.room-thumb {
+    transition: all 0.3s ease;
+}
+
+.room-thumb:hover {
+    transform: scale(1.02);
+}
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.carousel-item img {
+    border-radius: 0;
+}
+</style>

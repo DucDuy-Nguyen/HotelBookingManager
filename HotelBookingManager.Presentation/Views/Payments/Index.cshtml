@@ -1,108 +1,175 @@
 ﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.PaymentDto>
 @using System.Security.Claims
-
 @{
     ViewData["Title"] = "Danh sách thanh toán";
-
     var roleClaim = User.FindFirstValue(ClaimTypes.Role);
     var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
     var isAdminOrStaff = roleId == 1 || roleId == 2;
 }
 
-<h2 class="mb-3">💳 Danh sách thanh toán</h2>
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info">Chưa có giao dịch thanh toán nào.</div>
-}
-else
-{
-    <div class="table-responsive shadow-sm">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>Mã giao dịch</th>
-                    <th>Số tiền</th>
-                    <th>Phương thức</th>
-                    <th>Trạng thái</th>
-                    <th>Phòng</th>
-                    <th>Khách hàng</th>
-                    <th width="180">Thao tác</th>
-                </tr>
-            </thead>
+<style>
+    :root {
+        --primary: #0d6efd;
+        --success: #198754;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --dark: #1a1a1a;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+    }
 
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@(item.TransactionCode ?? "—")</td>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
 
-                        <td class="text-end">
-                            @item.Amount.ToString("N0") VNĐ
-                        </td>
+    h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+    }
 
-                        <td class="text-center">
-                            <span class="badge bg-primary">
-                                @(item.Method == "Cash" ? "Tiền mặt"
-                                                        : item.Method == "VNPAY" ? "VNPay"
-                                                        : item.Method)
-                            </span>
-                        </td>
+    .hero-bg {
+        background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65));
+        height: 260px;
+        border-radius: 0 0 32px 32px;
+    }
 
-                        <td class="text-center">
-                            @{
-                                var status = item.Status;
-                                var badgeClass = "bg-secondary";
-                                var statusText = status;
+    .payment-card {
+        border: none;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-                                if (status == "Paid" || status == "Success")
-                                {
-                                    badgeClass = "bg-success";
-                                    statusText = "Đã thanh toán";
-                                }
-                                else if (status == "Pending")
-                                {
-                                    badgeClass = "bg-warning text-dark";
-                                    statusText = "Chờ thanh toán";
-                                }
-                                else if (status == "Failed")
-                                {
-                                    badgeClass = "bg-danger";
-                                    statusText = "Thất bại";
-                                }
-                            }
+        .payment-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+        }
 
-                            <span class="badge @badgeClass">
-                                @statusText
-                            </span>
-                        </td>
+    .btn-rounded {
+        border-radius: 50px;
+        padding: 0.65rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
 
-                        <td>@(item.RoomNumber ?? "N/A")</td>
-                        <td>@(item.CustomerName ?? "N/A")</td>
+        .btn-rounded:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
 
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm">
-                                <a asp-action="Details"
-                                   asp-route-id="@item.PaymentId"
-                                   class="btn btn-info">
-                                    Chi tiết
-                                </a>
+    .status-badge {
+        padding: 0.55rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
 
-                                @if (isAdminOrStaff
-                                                        && item.Method == "Cash"
-                                                        && item.Status == "Pending")
-                                {
-                                    <a asp-action="Pay"
-                                       asp-route-paymentId="@item.PaymentId"
-                                       class="btn btn-success">
-                                        Thu tiền
-                                    </a>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    .badge-pending {
+        background: var(--warning);
+        color: var(--dark);
+    }
+
+    .badge-success {
+        background: var(--success);
+        color: white;
+    }
+
+    .badge-failed {
+        background: var(--danger);
+        color: white;
+    }
+
+    .badge-default {
+        background: var(--gray);
+        color: white;
+    }
+
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+</style>
+
+<!-- HERO HEADER -->
+<div class="hero-bg position-relative mb-5">
+    <div class="container h-100 d-flex flex-column justify-content-center text-white text-center px-4">
+        <h1 class="display-5 fw-bold mb-2">Danh sách thanh toán</h1>
+        <p class="lead opacity-75 mb-0">Quản lý giao dịch thanh toán</p>
     </div>
-}
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container pb-5">
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5 rounded-4 shadow-sm">
+            <i class="bi bi-credit-card fs-1 mb-3 opacity-75 d-block"></i>
+            <h4 class="fw-bold">Chưa có giao dịch thanh toán nào</h4>
+            <p class="text-muted mb-4">Hãy chờ khách hàng thanh toán hoặc kiểm tra lại bộ lọc.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-6">
+                    <div class="payment-card p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold mb-0">Mã giao dịch: @(item.TransactionCode ?? "—")</h5>
+                            <span class="status-badge @(item.Status == "Paid" || item.Status == "Success" ? "badge-success" : item.Status == "Pending" ? "badge-pending" : item.Status == "Failed" ? "badge-failed" : "badge-default")">
+                                @(item.Status == "Paid" || item.Status == "Success" ? "Đã thanh toán" : item.Status == "Pending" ? "Chờ thanh toán" : item.Status == "Failed" ? "Thất bại" : item.Status)
+                            </span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Số tiền</small>
+                                <strong class="text-success fs-5">@item.Amount.ToString("N0") VNĐ</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Phương thức</small>
+                                <strong>@(item.Method == "Cash" ? "Tiền mặt" : item.Method == "VNPAY" ? "VNPay" : item.Method)</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Phòng</small>
+                                <strong>@(item.RoomNumber ?? "N/A")</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Khách hàng</small>
+                                <strong>@(item.CustomerName ?? "N/A")</strong>
+                            </div>
+                        </div>
+
+                        @* @if (isAdminOrStaff && item.Method == "Cash" && item.Status == "Pending")
+                        {
+                            <form asp-action="Pay" method="post" class="d-flex align-items-center gap-3 mt-3">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="paymentId" value="@item.PaymentId" />
+                                <button type="submit" class="btn btn-success btn-lg btn-rounded shadow flex-fill">
+                                    <i class="bi bi-currency-dollar me-1"></i> Thu tiền
+                                </button>
+                            </form>
+                        } *@
+
+                        <div class="mt-3">
+                            <a asp-action="Details" asp-route-id="@item.PaymentId"
+                               class="btn btn-outline-info btn-sm btn-rounded hover-lift">
+                                <i class="bi bi-eye me-1"></i> Chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

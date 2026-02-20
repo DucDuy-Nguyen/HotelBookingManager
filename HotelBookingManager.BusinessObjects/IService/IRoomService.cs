@@ -10,7 +10,7 @@ namespace HotelBookingManager.BusinessObjects.IService
         Task<RoomDto?> GetByIdAsync(int id);
         Task<IEnumerable<RoomDto>> GetByHotelAsync(int hotelId, bool onlyAvailable);
         Task<IEnumerable<RoomDto>> GetByStatusAsync(string status);
-        Task<RoomDto> CreateAsync(RoomDto room);
+        Task<int> CreateAsync(RoomCreateUpdateDto room);
         Task<bool> UpdateAsync(RoomDto room);
         Task<bool> DeleteAsync(int id);
     }

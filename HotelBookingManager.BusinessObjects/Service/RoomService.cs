@@ -23,15 +23,30 @@ namespace HotelBookingManager.BusinessObjects.Service
             RoomId = r.RoomId,
             HotelId = r.HotelId,
             RoomTypeId = r.RoomTypeId,
-            HotelName = r.Hotel?.Name,          // an toàn
-            RoomTypeName = r.RoomType?.Name,   // <-- GÁN TÊN LOẠI PHÒNG
-
+            HotelName = r.Hotel?.Name,
+            RoomTypeName = r.RoomType?.Name,
             RoomNumber = r.RoomNumber,
             Floor = r.Floor,
             Status = r.Status,
             CurrentPrice = r.CurrentPrice,
-            IsActive = r.IsActive
+            IsActive = r.IsActive,
+
+            // 🆕 MAP ẢNH - KHÔNG DÙNG Images nữa
+            FirstImageUrl = r.RoomImages?.FirstOrDefault(i => i.IsThumbnail)?.ImageUrl,
+            RoomImagesCount = r.RoomImages?.Count(i => i.IsActive) ?? 0,
+            RoomImages = r.RoomImages?
+           .Where(i => i.IsActive)
+           .OrderBy(i => i.DisplayOrder)
+           .Select(i => new RoomImageDto
+           {
+               RoomImageId = i.RoomImageId,
+               ImageUrl = i.ImageUrl,
+               DisplayOrder = i.DisplayOrder,
+               IsThumbnail = i.IsThumbnail
+           })
+           .ToList()
         };
+
 
         private static Room ToEntity(RoomDto dto) => new Room
         {
@@ -63,16 +78,25 @@ namespace HotelBookingManager.BusinessObjects.Service
             return rooms.Select(ToDto);
         }
 
-        public async Task<RoomDto> CreateAsync(RoomDto dto)
+        public async Task<int> CreateAsync(RoomCreateUpdateDto dto)
         {
-            var room = ToEntity(dto);
-            room.IsActive = true;
+            var room = new Room
+            {
+                HotelId = dto.HotelId,
+                RoomTypeId = dto.RoomTypeId,
+                RoomNumber = dto.RoomNumber,
+                Floor = dto.Floor,
+                CurrentPrice = dto.CurrentPrice,
+                Status = "Available",
+                IsActive = true
+            };
 
             await _roomRepository.AddAsync(room);
             await _roomRepository.SaveChangesAsync();
 
-            return ToDto(room);
+            return room.RoomId; // 🔥 rất quan trọng
         }
+
 
         public async Task<bool> UpdateAsync(RoomDto dto)
         {

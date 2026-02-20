@@ -1,67 +1,145 @@
 ﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.FeedbackDto>
-
 @{
-    // Lấy RoleId từ claim (string), mặc định "3" nếu không có
-    var roleClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
-    var roleId = string.IsNullOrEmpty(roleClaim) ? 3 : int.Parse(roleClaim);
+    // Lấy roleId an toàn (fallback về 3 nếu không có claim)
+    var roleClaim = User.Claims.FirstOrDefault(c => c.Type == "RoleId")?.Value
+                 ?? User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                 ?? "3";
+    var roleId = int.TryParse(roleClaim, out var parsed) ? parsed : 3;
+
+    // Title động theo role
+    var title = roleId == 1 ? "Tất cả đánh giá"
+               : roleId == 2 ? "Đánh giá của khách sạn bạn quản lý"
+               : "Đánh giá của bạn";
 }
 
-<a asp-action="Create" class="btn btn-success mb-3">
-    Đánh giá
-</a>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Hotel</th>
-            <th>Khách</th>
-            <th>Phòng</th>
-            <th>Rating</th>
-            <th>Comment</th>
-            <th>Thao tác</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.HotelName</td>
-                <td>@item.CustomerName</td>
-                <td>@item.RoomNumber</td>
-                <td>@item.Rating</td>
-                <td>@item.Comment</td>
-                <td>
-                    <!-- Ai cũng được xem chi tiết -->
-                    <a asp-action="Details"
-                       asp-route-id="@item.FeedbackId"
-                       class="btn btn-sm btn-info me-1">
-                        Chi tiết
-                    </a>
+<style>
+    :root {
+        --primary: #0d6efd;
+        --success: #198754;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --dark: #1a1a1a;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+    }
 
-                    @if (roleId == 1 || roleId == 2)
-                    {
-                        <!-- Role 1,2: được sửa và xoá -->
-                        <a asp-action="Edit"
-                           asp-route-id="@item.FeedbackId"
-                           class="btn btn-sm btn-warning me-1">
-                            Sửa
-                        </a>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
 
-                        <form asp-action="Delete"
-                              asp-route-id="@item.FeedbackId"
-                              method="post"
-                              class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <button type="submit"
-                                    class="btn btn-sm btn-danger"
-                                    onclick="return confirm('Xoá feedback này?');">
-                                Xóa
-                            </button>
-                        </form>
-                    }
-                    <!-- Role 3: không hiện Sửa/Xoá -->
-                </td>
-            </tr>
+    h1, h5 {
+        font-family: 'Playfair Display', serif;
+    }
+
+    .hero-bg {
+        background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65));
+        height: 220px;
+        border-radius: 0 0 24px 24px;
+    }
+
+    .feedback-card {
+        border: none;
+        border-radius: 16px;
+        background: white;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .feedback-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
         }
-    </tbody>
-</table>
+
+    .btn-rounded {
+        border-radius: 50px;
+        padding: 0.6rem 1.4rem;
+        font-weight: 500;
+    }
+
+    .rating-badge {
+        background: var(--warning);
+        color: var(--dark);
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.95rem;
+    }
+</style>
+
+<!-- HERO HEADER -->
+<div class="hero-bg position-relative mb-5">
+    <div class="container h-100 d-flex flex-column justify-content-center text-white text-center px-4">
+        <h1 class="display-5 fw-bold mb-2">@title</h1>
+        <p class="lead opacity-75 mb-0">Ý kiến chân thực từ khách hàng</p>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container pb-5">
+    <!-- Nút thêm đánh giá -->
+    <div class="text-end mb-4">
+        <a asp-controller="Feedbacks" asp-action="Create" class="btn btn-success btn-lg btn-rounded shadow">
+            <i class="bi bi-plus-lg me-1"></i> Viết đánh giá
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5 rounded-4 shadow-sm">
+            <i class="bi bi-chat-square-text fs-3 mb-3 d-block"></i>
+            Chưa có đánh giá nào phù hợp với vai trò của bạn.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-6">
+                    <div class="feedback-card p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="fw-bold mb-0">@item.HotelName</h5>
+                            <span class="rating-badge">⭐ @item.Rating</span>
+                        </div>
+
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-person me-1"></i> @item.CustomerName
+                        </p>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-door-open me-1"></i> Phòng @item.RoomNumber
+                        </p>
+
+                        <p class="text-dark mb-4">
+                            @item.Comment
+                        </p>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <a asp-controller="Feedbacks" asp-action="Details" asp-route-id="@item.FeedbackId"
+                               class="btn btn-outline-info btn-sm btn-rounded">
+                                Chi tiết
+                            </a>
+
+                            @if (roleId == 1 || roleId == 2)
+                            {
+                                <a asp-controller="Feedbacks" asp-action="Edit" asp-route-id="@item.FeedbackId"
+                                   class="btn btn-outline-warning btn-sm btn-rounded">
+                                    Sửa
+                                </a>
+                                <form asp-controller="Feedbacks" asp-action="Delete" asp-route-id="@item.FeedbackId" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm btn-rounded"
+                                            onclick="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
+                                        Xóa
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

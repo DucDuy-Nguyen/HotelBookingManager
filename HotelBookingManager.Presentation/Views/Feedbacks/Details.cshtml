@@ -1,34 +1,141 @@
 ﻿@model HotelBookingManager.BusinessObjects.DTO.FeedbackDto
-
 @{
-    ViewData["Title"] = "Chi tiết feedback";
+    ViewData["Title"] = "Chi tiết đánh giá";
 }
 
-<h2>Chi tiết feedback</h2>
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<dl class="row">
-    <dt class="col-sm-2">Hotel</dt>
-    <dd class="col-sm-10">@Model.HotelName</dd>
+<style>
+    :root {
+        --primary: #0d6efd;
+        --success: #198754;
+        --warning: #ffc107;
+        --dark: #1a1a1a;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+    }
 
-    <dt class="col-sm-2">Khách</dt>
-    <dd class="col-sm-10">@Model.CustomerName</dd>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
 
-    <dt class="col-sm-2">Phòng</dt>
-    <dd class="col-sm-10">@Model.RoomNumber</dd>
+    h1, h2, dt {
+        font-family: 'Playfair Display', serif;
+    }
 
-    <dt class="col-sm-2">Rating</dt>
-    <dd class="col-sm-10">
-        @for (int i = 1; i <= 5; i++)
-        {
-            <span style="color:@(i <= Model.Rating ? "#ffc107" : "#ccc")">★</span>
-        }
-    </dd>
+    .hero-bg {
+        background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.45)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop') center/cover;
+        height: 340px;
+        border-radius: 0 0 32px 32px;
+        position: relative;
+    }
 
-    <dt class="col-sm-2">Comment</dt>
-    <dd class="col-sm-10">@Model.Comment</dd>
+    .detail-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
 
-    <dt class="col-sm-2">Created</dt>
-    <dd class="col-sm-10">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
-</dl>
+    .rating-stars {
+        font-size: 1.8rem;
+        letter-spacing: 0.1rem;
+    }
 
-<a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+    .btn-rounded {
+        border-radius: 50px;
+        padding: 0.7rem 1.8rem;
+        font-weight: 500;
+    }
+</style>
+
+<!-- HERO HEADER -->
+<div class="hero-bg position-relative mb-5">
+    <div class="container h-100 d-flex flex-column justify-content-center text-white px-4">
+        <h1 class="display-4 fw-bold mb-2">Chi tiết đánh giá</h1>
+        <p class="lead opacity-75 mb-0">
+            Phản hồi từ khách hàng về khách sạn
+        </p>
+    </div>
+</div>
+
+<!-- DETAIL CARD -->
+<div class="container mb-5" style="margin-top: -120px; position: relative; z-index: 10;">
+    <div class="card detail-card mx-auto overflow-hidden rounded-4"
+         style="max-width: 900px; background: white;">
+        <div class="card-body p-5 p-md-5">
+
+            <div class="row g-5">
+                <!-- Thông tin chính -->
+                <div class="col-lg-8">
+                    <h2 class="fw-bold mb-4">@Model.HotelName</h2>
+
+                    <dl class="row g-3 mb-4">
+                        <dt class="col-sm-3 text-muted fw-medium">Khách hàng</dt>
+                        <dd class="col-sm-9">@Model.CustomerName</dd>
+
+                        <dt class="col-sm-3 text-muted fw-medium">Phòng</dt>
+                        <dd class="col-sm-9">@Model.RoomNumber</dd>
+
+                        <dt class="col-sm-3 text-muted fw-medium">Đánh giá</dt>
+                        <dd class="col-sm-9">
+                            <div class="rating-stars">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span style="color: @(i <= Model.Rating ? "var(--warning)" : "#e0e0e0");">★</span>
+                                }
+                                <span class="ms-2 text-muted">(@Model.Rating / 5)</span>
+                            </div>
+                        </dd>
+
+                        <dt class="col-sm-3 text-muted fw-medium">Thời gian</dt>
+                        <dd class="col-sm-9">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <dt class="col-sm-3 text-muted fw-medium">Cập nhật</dt>
+                            <dd class="col-sm-9">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                        }
+                    </dl>
+
+                    <h5 class="fw-semibold mb-3">Nhận xét:</h5>
+                    <p class="text-dark lead lh-lg mb-0">
+                        @Model.Comment
+                    </p>
+                </div>
+
+                <!-- Sidebar (nếu cần thêm sau này) -->
+                <div class="col-lg-4">
+                    <!-- Có thể thêm thông tin phụ hoặc nút liên quan -->
+                </div>
+            </div>
+
+            <!-- Nút hành động -->
+            <div class="mt-5 pt-4 d-flex flex-column flex-md-row justify-content-between align-items-center gap-4 border-top pt-5">
+                <a asp-action="Index" class="btn btn-outline-secondary px-5 py-3 rounded-pill fw-medium">
+                    ← Quay lại danh sách
+                </a>
+
+                @if (ViewBag.RoleId == 1 || ViewBag.RoleId == 2)
+                {
+                    <div class="d-flex gap-3">
+                        <a asp-action="Edit" asp-route-id="@Model.FeedbackId"
+                           class="btn btn-outline-warning px-5 py-3 rounded-pill fw-medium">
+                            Sửa đánh giá
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@Model.FeedbackId" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger px-5 py-3 rounded-pill fw-medium"
+                                    onclick="return confirm('Bạn có chắc muốn xóa đánh giá này?');">
+                                Xóa đánh giá
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>

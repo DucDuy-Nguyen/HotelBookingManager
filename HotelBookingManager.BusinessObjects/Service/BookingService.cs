@@ -120,7 +120,8 @@ namespace HotelBookingManager.BusinessObjects.Service
             booking.Status = newStatus;
             _bookingRepo.Update(booking);
 
-            if (newStatus == "Cancelled" || newStatus == "CheckedOut")
+            // ✅ THÊM "Completed" VÀO ĐIỀU KIỆN
+            if (newStatus == "Cancelled" || newStatus == "CheckedOut" || newStatus == "Completed")
             {
                 var room = await _roomService.GetByIdAsync(booking.RoomId);
                 if (room != null)
@@ -132,6 +133,7 @@ namespace HotelBookingManager.BusinessObjects.Service
 
             await _bookingRepo.SaveChangesAsync();
         }
+
 
     }
 }

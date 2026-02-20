@@ -1,163 +1,369 @@
 ﻿@model IEnumerable<HotelBookingManager.BusinessObjects.DTO.RoomDto>
 @using System.Security.Claims
-
 @{
     var currentStatus = (ViewBag.Status as string) ?? "active";
     var roleClaim = User.FindFirst("RoleId")?.Value;
     var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
+
+    // Phân trang (lấy từ ViewBag của controller)
+    int pageNumber = ViewBag.PageNumber ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
 }
 
-<h2>🛠️ Quản lý phòng (Quản trị / Nhân viên)</h2>
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<div class="d-flex justify-content-between mb-3">
-    <a asp-action="Create" class="btn btn-success">
-        <i class="fas fa-plus me-1"></i> Thêm phòng mới
-    </a>
-    <form asp-action="Index" method="get" class="d-inline">
-        <label class="form-label me-2 mb-0 d-none d-md-inline">
-            Lọc theo trạng thái:
-        </label>
-        <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="active" selected="@(currentStatus == "active")">
-                Đang hoạt động
-            </option>
-            <option value="inactive" selected="@(currentStatus == "inactive")">
-                Ngừng hoạt động
-            </option>
-            <option value="all" selected="@(currentStatus == "all")">
-                Tất cả
-            </option>
-        </select>
-    </form>
+<style>
+    :root {
+        --primary: #0d6efd;
+        --success: #198754;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --dark: #1a1a1a;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+    }
+
+    .hero-bg {
+        background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65));
+        height: 260px;
+        border-radius: 0 0 32px 32px;
+    }
+
+    .room-thumbnail {
+        width: 120px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+        transition: transform 0.4s ease;
+    }
+
+    .room-card:hover .room-thumbnail {
+        transform: scale(1.05);
+    }
+
+    .btn-rounded {
+        border-radius: 50px;
+        padding: 0.65rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .btn-rounded:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+    .status-badge {
+        padding: 0.55rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .active-badge {
+        background: var(--success);
+        color: white;
+    }
+
+    .booked-badge {
+        background: var(--warning);
+        color: var(--dark);
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+        font-weight: bold;
+    }
+
+    .pagination .page-link {
+        color: var(--primary);
+        border-radius: 50px;
+        margin: 0 6px;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        border: 2px solid var(--primary);
+        transition: all 0.3s ease;
+    }
+
+        .pagination .page-link:hover:not(.disabled) {
+            background-color: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+    .pagination .page-item.disabled .page-link {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<!-- HERO HEADER -->
+<div class="hero-bg position-relative mb-5">
+    <div class="container h-100 d-flex flex-column justify-content-center text-white text-center px-4">
+        <h1 class="display-5 fw-bold mb-2">Quản lý phòng</h1>
+        <p class="lead opacity-75 mb-0">Quản trị / Nhân viên</p>
+    </div>
 </div>
 
-@if (!Model.Any())
-{
-    <div class="alert alert-info text-center py-5">
-        <i class="fas fa-building fs-1 mb-3 opacity-75"></i>
-        <h4>Chưa có phòng nào trong hệ thống</h4>
-        <a asp-action="Create" class="btn btn-primary mt-2">
-            ➕ Thêm phòng đầu tiên
-        </a>
-    </div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover table-bordered align-middle">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th style="width: 8%;">Khách sạn</th>
-                    <th style="width: 10%;">Số phòng</th>
-                    <th style="width: 8%;">Tầng</th>
-                    <th style="width: 10%;">Loại phòng</th>
-                    <th style="width: 12%;">Giá phòng</th>
-                    <th style="width: 12%;">Tình trạng phòng</th>
-                    <th style="width: 8%;">Kích hoạt</th>
-                    <th style="width: 32%;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var r in Model)
-                {
-                    <tr class="@(r.Status == "Available" ? "table-success" : "")">
-                        <td class="text-center">
-                            @if (!string.IsNullOrEmpty(r.HotelName))
-                            {
-                                <span class="badge bg-info">
-                                    @r.HotelName
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">
-                                    Hotel #@r.HotelId
-                                </span>
-                            }
-                        </td>
-                        <td>
-                            <strong>@r.RoomNumber</strong>
-                        </td>
-                        <td class="text-center">
-                            @r.Floor
-                        </td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(r.RoomTypeName))
-                            {
-                                @r.RoomTypeName
-                            }
-                            else
-                            {
-                                @:Loại phòng #@r.RoomTypeId
-                            }
-                        </td>
-                        <td>
-                            <strong class="text-success">
-                                @r.CurrentPrice.ToString("N0") VNĐ
-                            </strong>
-                        </td>
-                        <td class="text-center">
-                            @if (r.Status == "Available")
-                            {
-                                <span class="badge bg-success fs-6">
-                                    Có sẵn
-                                </span>
-                            }
-                            else if (r.Status == "Booked")
-                            {
-                                <span class="badge bg-warning text-dark fs-6">
-                                    Đã được đặt
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary fs-6">
-                                    @r.Status
-                                </span>
-                            }
-                        </td>
-                        <td class="text-center">
-                            @if (r.IsActive)
-                            {
-                                <span class="badge bg-success fs-6">
-                                    Hoạt động
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger fs-6">
-                                    Ngừng
-                                </span>
-                            }
-                        </td>
-                        <!-- ✨ SỬA: Thêm text vào nút Edit và Delete -->
-                        <td>
-                            <div class="d-flex gap-2">
-                                <a asp-action="Edit"
-                                   asp-route-id="@r.RoomId"
-                                   class="btn btn-warning btn-sm text-white"
-                                   title="Chỉnh sửa phòng @r.RoomNumber">
-                                    <i class="fas fa-edit"></i> Sửa
-                                </a>
-                                <a asp-action="Delete"
-                                   asp-route-id="@r.RoomId"
-                                   class="btn btn-danger btn-sm"
-                                   title="Xóa phòng @r.RoomNumber"
-                                   onclick="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn phòng @r.RoomNumber không?')">
-                                    <i class="fas fa-trash"></i> Xóa
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
+<!-- MAIN CONTENT -->
+<div class="container pb-5">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-4 mb-5">
+        @if (isAdminOrStaff)
+        {
+            <a asp-action="Create" class="btn btn-success btn-lg btn-rounded shadow">
+                <i class="bi bi-plus-lg me-1"></i> Thêm phòng mới
+            </a>
+        }
 
-@if (TempData["Success"] != null)
+        <!-- Filter form -->
+        <form asp-action="Index" method="get" class="d-inline">
+            <div class="input-group input-group-lg rounded-pill shadow-sm overflow-hidden" style="max-width: 380px;">
+                <span class="input-group-text bg-white border-0 ps-4">
+                    <i class="bi bi-filter-left text-muted fs-4"></i>
+                </span>
+                <select name="status" class="form-select border-0" onchange="this.form.submit()">
+                    <option value="active" selected="@(currentStatus == "active")">Đang hoạt động</option>
+                    <option value="inactive" selected="@(currentStatus == "inactive")">Ngừng hoạt động</option>
+                    <option value="all" selected="@(currentStatus == "all")">Tất cả</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5 rounded-4 shadow-sm">
+            <i class="bi bi-building fs-1 mb-3 opacity-75 d-block"></i>
+            <h4 class="fw-bold">Chưa có phòng nào trong hệ thống</h4>
+            <p class="text-muted mb-4">Hãy thêm phòng đầu tiên để bắt đầu quản lý!</p>
+            @if (isAdminOrStaff)
+            {
+                <a asp-action="Create" class="btn btn-primary btn-lg btn-rounded shadow">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm phòng đầu tiên
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive rounded-4 shadow-sm overflow-hidden">
+            <table class="table table-hover table-borderless align-middle mb-0">
+                <thead class="bg-dark text-white text-center">
+                    <tr>
+                        <th style="width: 120px;">Ảnh</th>
+                        <th>Khách sạn</th>
+                        <th>Số phòng</th>
+                        <th>Tầng</th>
+                        <th>Loại phòng</th>
+                        <th>Giá phòng</th>
+                        <th>Tình trạng</th>
+                        <th>Kích hoạt</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr class="@(r.Status == "Available" ? "table-success" : "table-warning") @(r.IsActive ? "" : "table-secondary")">
+                            <!-- Ảnh (to hơn, căn giữa) -->
+                            <td class="text-center p-2">
+                                @if (!string.IsNullOrEmpty(r.FirstImageUrl))
+                                {
+                                    <div class="position-relative mx-auto" style="width: 120px;">
+                                        <img src="@r.FirstImageUrl"
+                                             alt="Phòng @r.RoomNumber"
+                                             class="rounded shadow-sm"
+                                             style="width: 120px; height: 100px; object-fit: cover;"
+                                             onerror="this.src='/images/no-image-room.jpg'"
+                                             data-bs-toggle="modal"
+                                             data-bs-target="#roomImageModal@r.RoomId"
+                                             title="Click để xem ảnh lớn" />
+                                        @if (r.RoomImagesCount > 1)
+                                        {
+                                            <span class="badge bg-primary position-absolute top-0 start-100 translate-middle badge-pill">
+                                                +@(r.RoomImagesCount - 1)
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="width: 120px; height: 100px;">
+                                        <i class="bi bi-image text-muted fs-3"></i>
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(r.HotelName))
+                                {
+                                    <span class="badge bg-info text-dark px-3 py-2">@r.HotelName</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2">Hotel #@r.HotelId</span>
+                                }
+                            </td>
+                            <td class="fw-bold text-primary text-center">@r.RoomNumber</td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark px-3 py-2">@(r.Floor ?? 0)</span>
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(r.RoomTypeName))
+                                {
+                                    <span class="badge bg-warning text-dark px-3 py-2">@r.RoomTypeName</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2">Loại #@r.RoomTypeId</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <strong class="text-success fs-5">@r.CurrentPrice.ToString("N0")đ</strong>
+                            </td>
+                            <td class="text-center">
+                                @if (r.Status == "Available")
+                                {
+                                    <span class="status-badge active-badge">
+                                        <i class="bi bi-check-circle me-1"></i>Có sẵn
+                                    </span>
+                                }
+                                else if (r.Status == "Booked")
+                                {
+                                    <span class="status-badge booked-badge">
+                                        <i class="bi bi-calendar-check me-1"></i>Đã đặt
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2">@r.Status</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (r.IsActive)
+                                {
+                                    <span class="badge bg-success px-3 py-2">
+                                        <i class="bi bi-toggle-on me-1"></i>ON
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger px-3 py-2">
+                                        <i class="bi bi-toggle-off me-1"></i>OFF
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a asp-action="Edit" asp-route-id="@r.RoomId"
+                                       class="btn btn-outline-warning btn-sm btn-rounded hover-lift"
+                                       title="Sửa phòng @r.RoomNumber">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@r.RoomId"
+                                       class="btn btn-outline-info btn-sm btn-rounded hover-lift"
+                                       title="Xem chi tiết @r.RoomNumber">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@r.RoomId"
+                                       class="btn btn-outline-danger btn-sm btn-rounded hover-lift"
+                                       onclick="return confirm('Xóa vĩnh viễn phòng @r.RoomNumber?')"
+                                       title="Xóa phòng">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PHÂN TRANG ĐẸP (bo tròn, active xanh đậm) -->
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination pagination-lg justify-content-center">
+                    <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
+                        <a class="page-link btn-rounded" asp-action="Index" asp-route-status="@currentStatus" asp-route-pageNumber="@(pageNumber - 1)">
+                            Trước
+                        </a>
+                    </li>
+
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == pageNumber ? "active" : "")">
+                            <a class="page-link btn-rounded" asp-action="Index" asp-route-status="@currentStatus" asp-route-pageNumber="@i">
+                                @i
+                            </a>
+                        </li>
+                    }
+
+                    <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
+                        <a class="page-link btn-rounded" asp-action="Index" asp-route-status="@currentStatus" asp-route-pageNumber="@(pageNumber + 1)">
+                            Sau
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mt-4 rounded-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+</div>
+
+<!-- Modal xem ảnh lớn (giữ nguyên) -->
+@foreach (var r in Model)
 {
-    <script>
-        alert('@TempData["Success"]');
-    </script>
+    if (!string.IsNullOrEmpty(r.FirstImageUrl))
+    {
+        <div class="modal fade" id="roomImageModal@r.RoomId" tabindex="-1">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content border-0 rounded-4 overflow-hidden shadow-xl">
+                    <div class="modal-header bg-primary text-white border-0">
+                        <h5 class="modal-title">
+                            <i class="bi bi-image me-2"></i> Ảnh phòng @r.RoomNumber - @r.HotelName
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center p-0">
+                        <img src="@r.FirstImageUrl"
+                             alt="Phòng @r.RoomNumber"
+                             class="img-fluid w-100"
+                             style="max-height: 80vh; object-fit: contain;" />
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <a asp-action="Edit" asp-route-id="@r.RoomId" class="btn btn-primary btn-rounded">
+                            <i class="bi bi-images me-1"></i> Quản lý ảnh
+                        </a>
+                        <button type="button" class="btn btn-secondary btn-rounded" data-bs-dismiss="modal">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 }

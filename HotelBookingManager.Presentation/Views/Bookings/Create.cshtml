@@ -2,65 +2,184 @@
 
 @{
     ViewData["Title"] = "Tạo booking";
-    var createUrl = Url.Action("Create", "Bookings");
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+    var tomorrow = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
 }
 
-<h2>Tạo booking</h2>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- 🏨 HEADER -->
+            <div class="text-center mb-5">
+                <div class="icon-circle bg-primary bg-opacity-10 text-primary mb-3 mx-auto">
+                    <i class="fas fa-calendar-check fa-2x"></i>
+                </div>
+                <h2 class="fw-bold text-dark mb-1">Đặt phòng khách sạn</h2>
+                <p class="text-muted lead">Chọn thông tin đặt phòng của bạn</p>
+            </div>
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
+            <form asp-action="Create"
+                  method="post"
+                  id="createBookingForm"
+                  class="booking-form shadow-lg border-0 rounded-4 p-4 p-lg-5 bg-white">
 
-    <div class="mb-3">
-        <label class="form-label">Khách sạn</label>
-        <select asp-for="HotelId"
-                class="form-select"
-                asp-items="ViewBag.HotelId"
-                onchange="location.href='@createUrl?hotelId=' + this.value">
-            <option value="">-- Chọn khách sạn --</option>
-        </select>
-        <span asp-validation-for="HotelId" class="text-danger"></span>
+                <!-- ✅ ĐÃ BỎ 2 DÒNG validation summary -->
+                <div id="customError" class="alert alert-danger" style="display:none;"></div>
+
+                <div class="row g-4">
+                    <!-- 🏨 KHÁCH SẠN -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold mb-2">Khách sạn <i class="fas fa-hotel text-primary"></i></label>
+                        <select asp-for="HotelId"
+                                class="form-select form-select-lg border-primary-subtle"
+                                id="hotelSelect"
+                                asp-items="ViewBag.HotelId"
+                                required>
+                            <option value="">-- Chọn khách sạn --</option>
+                        </select>
+                        <span asp-validation-for="HotelId" class="text-danger small"></span>
+                    </div>
+
+                    <!-- 🛏️ PHÒNG -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold mb-2">Phòng <i class="fas fa-bed text-primary"></i></label>
+                        <select asp-for="RoomId"
+                                class="form-select form-select-lg border-primary-subtle"
+                                id="roomSelect"
+                                asp-items="ViewBag.RoomId"
+                                required>
+                            <option value="">-- Chọn phòng --</option>
+                        </select>
+                        <span asp-validation-for="RoomId" class="text-danger small"></span>
+                    </div>
+
+                    <!-- 📅 CHECK-IN -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold mb-2">
+                            Check-in <i class="fas fa-sign-in-alt text-success"></i>
+                        </label>
+                        <input asp-for="CheckInDate"
+                               id="checkIn"
+                               class="form-control form-control-lg border-success-subtle"
+                               type="date"
+                               value="@today"
+                               min="@today"
+                               required />
+                        <span asp-validation-for="CheckInDate" class="text-danger small"></span>
+                    </div>
+
+                    <!-- 📤 CHECK-OUT -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold mb-2">
+                            Check-out <i class="fas fa-sign-out-alt text-danger"></i>
+                        </label>
+                        <input asp-for="CheckOutDate"
+                               id="checkOut"
+                               class="form-control form-control-lg border-danger-subtle"
+                               type="date"
+                               value="@tomorrow"
+                               min="@tomorrow"
+                               required />
+                        <span asp-validation-for="CheckOutDate" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- 💎 SUMMARY BOX -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm bg-gradient-primary text-white p-4 rounded-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-1"><i class="fas fa-info-circle me-2"></i>Thông tin đặt phòng</h5>
+                                    <small id="bookingSummary" class="opacity-75">
+                                        Check-in: <strong>@DateTime.Today.ToString("dd/MM/yyyy")</strong> |
+                                        Check-out: <strong>@DateTime.Today.AddDays(1).ToString("dd/MM/yyyy")</strong>
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <div class="h4 mb-0 fw-bold text-warning" id="totalNights">1</div>
+                                    <small>Số đêm lưu trú</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🎯 ACTION BUTTONS -->
+                <div class="d-flex gap-3 justify-content-between mt-5 pt-4 border-top">
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                    <button type="submit"
+                            class="btn btn-primary btn-lg px-5 rounded-pill shadow-lg"
+                            id="submitBtn">
+                        <i class="fas fa-calendar-check me-2"></i>Lưu đặt phòng
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label class="form-label">Phòng</label>
-        <select asp-for="RoomId"
-                class="form-select"
-                asp-items="ViewBag.RoomId">
-            <option value="">-- Chọn phòng --</option>
-        </select>
-        <span asp-validation-for="RoomId" class="text-danger"></span>
-    </div>
+<!-- ✅ GIỮ NGUYÊN CSS và JS -->
+<style>
+    .booking-form {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        backdrop-filter: blur(10px);
+    }
 
-    <div class="mb-3">
-        <label class="form-label">Check-in</label>
-        <input asp-for="CheckInDate"
-               id="checkIn"
-               class="form-control"
-               type="date"
-               min="@DateTime.Today.ToString("yyyy-MM-dd")"
-               required />
-        <span asp-validation-for="CheckInDate" class="text-danger"></span>
-    </div>
+    .form-select:focus, .form-control:focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.15) !important;
+    }
 
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-    <div class="mb-3">
-        <label class="form-label">Check-out</label>
-        <input asp-for="CheckOutDate"
-               id="checkOut"
-               class="form-control"
-               type="date"
-               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")"
-               required />
-        <span asp-validation-for="CheckOutDate" class="text-danger"></span>
-    </div>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
 
-
-    <button type="submit" class="btn btn-primary">Lưu</button>
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
-</form>
+    @@media (max-width: 768px) {
+        .d-flex.gap-3 {
+            flex-direction: column-reverse;
+        }
+    }
+</style>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        // Tự động set ngày hiện tại và ngày mai
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            document.getElementById('checkIn').value = today;
+            document.getElementById('checkOut').value = tomorrowStr;
+        });
+
+        // Tính số đêm khi thay đổi ngày
+        document.getElementById('checkIn')?.addEventListener('change', updateNights);
+        document.getElementById('checkOut')?.addEventListener('change', updateNights);
+
+        function updateNights() {
+            const checkIn = new Date(document.getElementById('checkIn').value);
+            const checkOut = new Date(document.getElementById('checkOut').value);
+            const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+            document.getElementById('totalNights').textContent = nights > 0 ? nights : '-';
+        }
+    </script>
 }

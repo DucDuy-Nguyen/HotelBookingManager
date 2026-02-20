@@ -3,76 +3,168 @@
 @{
     var roleClaim = User.FindFirst("RoleId")?.Value;
     var isAdminOrStaff = int.TryParse(roleClaim, out int roleId) && (roleId == 1 || roleId == 2);
+
+    // Ảnh đại diện: ưu tiên ImageUrl của khách sạn, fallback nếu không có
+    var heroBackground = !string.IsNullOrWhiteSpace(Model.ImageUrl)
+        ? $"url('{Model.ImageUrl}')"
+        : "url('https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop')";
 }
 
-<h2 class="mb-4">🏨 Chi tiết khách sạn</h2>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<div class="card shadow-sm">
-    <div class="card-body">
+<style>
+    :root {
+        --primary: #0d6efd;
+        --dark: #1a1a1a;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+    }
 
-        <h4 class="card-title fw-bold mb-3">
-            @Model.Name
-        </h4>
+    body {
+        font-family: 'Inter', sans-serif;
+    }
 
-        <hr />
+    h1, h2, h3 {
+        font-family: 'Playfair Display', serif;
+    }
 
-        <dl class="row mb-0">
+    .hero-bg {
+        background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.45)), @Html.Raw(heroBackground);
+        background-size: cover;
+        background-position: center;
+        height: 380px;
+        border-radius: 0 0 20px 20px;
+        position: relative;
+    }
 
-            <dt class="col-sm-3 text-muted">📝 Mô tả</dt>
-            <dd class="col-sm-9">@Model.Description</dd>
+    .rating-pill {
+        background: rgba(255,255,255,0.18);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.25);
+    }
+</style>
 
-            <dt class="col-sm-3 text-muted">📍 Địa chỉ</dt>
-            <dd class="col-sm-9">@Model.Address</dd>
-
-            <dt class="col-sm-3 text-muted">🏙 Thành phố</dt>
-            <dd class="col-sm-9">@Model.City</dd>
-
-            <dt class="col-sm-3 text-muted">🌍 Quốc gia</dt>
-            <dd class="col-sm-9">@Model.Country</dd>
-
-            <dt class="col-sm-3 text-muted">⭐ Đánh giá</dt>
-            <dd class="col-sm-9 fw-semibold">
-                @Model.Rating ★
-            </dd>
-
-            <dt class="col-sm-3 text-muted">📞 Điện thoại</dt>
-            <dd class="col-sm-9">@Model.PhoneNumber</dd>
-
-            <dt class="col-sm-3 text-muted">📧 Email</dt>
-            <dd class="col-sm-9">@Model.Email</dd>
-
-            <dt class="col-sm-3 text-muted">📌 Trạng thái</dt>
-            <dd class="col-sm-9">
-                @if (Model.IsActive)
-                {
-                    <span class="badge bg-success px-3 py-2">
-                        Hoạt động
-                    </span>
-                }
-                else
-                {
-                    <span class="badge bg-secondary px-3 py-2">
-                        Ngừng hoạt động
-                    </span>
-                }
-            </dd>
-
-        </dl>
+<!-- Hero Header - Sử dụng ảnh của khách sạn -->
+<div class="hero-bg">
+    <div class="container h-100 d-flex flex-column justify-content-center text-white text-center px-4 position-relative">
+        <h1 class="display-4 fw-bold mb-2">@Model.Name</h1>
+        <p class="lead opacity-75 mb-4">
+            Trải nghiệm nghỉ dưỡng đẳng cấp – Không gian yên bình bên hồ nước
+        </p>
+        <div class="rating-pill d-inline-flex align-items-center gap-2 px-5 py-3 rounded-pill mx-auto">
+            <span class="text-warning fs-3 fw-bold">★ @(Model.Rating?.ToString("0.0") ?? "—")</span>
+            <span class="fs-5">(@(Model.Rating >= 4.5M ? "Xuất sắc" : "Tuyệt vời"))</span>
+        </div>
     </div>
 </div>
 
-<div class="mt-4 d-flex gap-2">
-    @* ADMIN / STAFF ONLY *@
-    @if (isAdminOrStaff)
-    {
-        <a asp-action="Edit"
-           asp-route-id="@Model.HotelId"
-           class="btn btn-warning">
-            ✏️ Sửa
-        </a>
-    }
+<!-- Main Card -->
+<div class="container" style="margin-top: -80px; position: relative; z-index: 10;">
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden mx-auto" style="max-width: 960px;">
+        <div class="card-body p-5">
 
-    <a asp-action="Index" class="btn btn-outline-secondary">
-        ⬅ Quay lại danh sách
-    </a>
+            <!-- Title + Rating -->
+            <div class="text-center mb-5">
+                <h2 class="fw-bold mb-2" style="font-size: 2.1rem;">@Model.Name</h2>
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                    <span class="text-warning fs-4 fw-bold">★ @(Model.Rating?.ToString("0.0") ?? "—")</span>
+                    <span class="badge bg-light text-dark px-3 py-2 rounded-pill fs-6">
+                        @(Model.Rating >= 4.5M ? "Highly Recommended" : "Recommended")
+                    </span>
+                </div>
+            </div>
+
+            <hr class="my-4 opacity-50" />
+
+            <!-- Thông tin 2 cột -->
+            <div class="row g-5">
+                <div class="col-lg-6">
+                    <h5 class="fw-semibold text-uppercase mb-4" style="color: var(--primary); letter-spacing: 1px;">
+                        THÔNG TIN CHI TIẾT
+                    </h5>
+                    <dl class="row g-3 mb-0">
+                        <dt class="col-4 text-muted fw-medium">Mô tả</dt>
+                        <dd class="col-8">@Model.Description</dd>
+                        <dt class="col-4 text-muted fw-medium">Địa chỉ</dt>
+                        <dd class="col-8">@Model.Address</dd>
+                        <dt class="col-4 text-muted fw-medium">Thành phố</dt>
+                        <dd class="col-8">@Model.City</dd>
+                        <dt class="col-4 text-muted fw-medium">Quốc gia</dt>
+                        <dd class="col-8">@Model.Country</dd>
+                    </dl>
+                </div>
+
+                <div class="col-lg-6">
+                    <h5 class="fw-semibold text-uppercase mb-4" style="color: var(--primary); letter-spacing: 1px;">
+                        LIÊN HỆ & TRẠNG THÁI
+                    </h5>
+                    <dl class="row g-3 mb-0">
+                        <dt class="col-4 text-muted fw-medium">Điện thoại</dt>
+                        <dd class="col-8 fw-semibold">@Model.PhoneNumber</dd>
+                        <dt class="col-4 text-muted fw-medium">Email</dt>
+                        <dd class="col-8">@Model.Email</dd>
+                        <dt class="col-4 text-muted fw-medium">Trạng thái</dt>
+                        <dd class="col-8">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge px-4 py-2 rounded-pill" style="background:#198754; color:white; font-size:0.95rem;">
+                                    Hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary px-4 py-2 rounded-pill">
+                                    Ngừng hoạt động
+                                </span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <hr class="my-5 opacity-50" />
+
+            <!-- Tiện nghi -->
+            <h5 class="fw-semibold text-uppercase text-center mb-4" style="color: var(--primary); letter-spacing: 1px;">
+                TIỆN NGHI NỔI BẬT
+            </h5>
+            <div class="row text-center g-4">
+                <div class="col-6 col-md-3"><i class="bi bi-wifi fs-2 text-primary"></i><p class="mt-2 small">Wifi miễn phí</p></div>
+                <div class="col-6 col-md-3"><i class="bi bi-water fs-2 text-primary"></i><p class="mt-2 small">View hồ</p></div>
+                <div class="col-6 col-md-3"><i class="bi bi-cup-hot fs-2 text-primary"></i><p class="mt-2 small">Nhà hàng Việt</p></div>
+                <div class="col-6 col-md-3"><i class="bi bi-cup-straw fs-2 text-primary"></i><p class="mt-2 small">Bar</p></div>
+                <div class="col-6 col-md-3"><i class="bi bi-heart-pulse fs-2 text-primary"></i><p class="mt-2 small">Spa</p></div>
+                <div class="col-6 col-md-3"><i class="bi bi-bicycle fs-2 text-primary"></i><p class="mt-2 small">Gym</p></div>
+                <div class="col-6 col-md-3"><i class="bi bi-car-front fs-2 text-primary"></i><p class="mt-2 small">Xe đưa đón</p></div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="mt-5 pt-4 text-center">
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="tel:@Model.PhoneNumber"
+                       class="btn btn-primary px-5 py-3 rounded-pill fw-medium shadow"
+                       style="font-size:1.05rem;">
+                        <i class="bi bi-telephone-fill me-2"></i>Liên hệ ngay
+                    </a>
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary px-5 py-3 rounded-pill fw-medium">
+                        ← Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+
+            @if (isAdminOrStaff)
+            {
+                <div class="text-center mt-4">
+                    <a asp-action="Edit" asp-route-id="@Model.HotelId"
+                       class="btn btn-outline-primary btn-sm px-4">
+                        ✏️ Chỉnh sửa
+                    </a>
+                </div>
+            }
+
+        </div>
+    </div>
 </div>

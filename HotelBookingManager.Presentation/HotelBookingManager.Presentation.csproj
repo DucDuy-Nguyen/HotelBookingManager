@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google_GenerativeAI" Version="3.6.3" />
     <PackageReference Include="MailKit" Version="4.14.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
       <PrivateAssets>all</PrivateAssets>
@@ -20,4 +19,10 @@
     <ProjectReference Include="..\HotelBookingManager.BusinessObjects\HotelBookingManager.BusinessObjects.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\rooms\" />
+  </ItemGroup>
+	<ItemGroup>
+		<Watch Remove="wwwroot/uploads/**" />
+	</ItemGroup>
 </Project>

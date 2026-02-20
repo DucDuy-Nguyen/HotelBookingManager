@@ -108,54 +108,86 @@
 </div>
 
 <script>
-    document.getElementById('recommendationForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+        document.getElementById('recommendationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const preferences = document.getElementById('preferences').value.trim();
+            const preferences = document.getElementById('preferences').value.trim();
 
-        if (!preferences) {
-            alert('Vui lòng nhập yêu cầu của bạn');
-            return;
-        }
-
-        // Hiển thị loading
-        document.getElementById('loadingSpinner').style.display = 'block';
-        document.getElementById('recommendationResult').style.display = 'none';
-        document.getElementById('errorMessage').style.display = 'none';
-
-        try {
-            const response = await fetch('/api/recommendation/get-suggestions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    preferences: preferences
-                })
-            });
-
-            document.getElementById('loadingSpinner').style.display = 'none';
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Có lỗi xảy ra');
+            if (!preferences) {
+                alert('Vui lòng nhập yêu cầu của bạn');
+                return;
             }
 
-            const data = await response.json();
+            // Hiển thị loading
+            document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('recommendationResult').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
 
-            if (data.success) {
-                document.getElementById('recommendationContent').innerHTML = data.recommendations;
-                document.getElementById('recommendationResult').style.display = 'block';
+            try {
+                const response = await fetch('/api/recommendation/get-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        preferences: preferences
+                    })
+                });
 
-                // Scroll đến kết quả
-                document.getElementById('recommendationResult').scrollIntoView({ behavior: 'smooth' });
-            } else {
-                throw new Error(data.message);
+                document.getElementById('loadingSpinner').style.display = 'none';
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Có lỗi xảy ra');
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('recommendationContent').innerHTML = data.recommendations;
+                    document.getElementById('recommendationResult').style.display = 'block';
+
+                    // Scroll đến kết quả
+                    document.getElementById('recommendationResult').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('errorText').textContent = error.message;
+                document.getElementById('errorMessage').style.display = 'block';
             }
-        } catch (error) {
-            document.getElementById('loadingSpinner').style.display = 'none';
-            document.getElementById('errorText').textContent = error.message;
-            document.getElementById('errorMessage').style.display = 'block';
-        }
-    });
+        });
+                document.addEventListener('click', function (e) {
+
+            // ===== ĐẶT PHÒNG =====
+            const bookBtn = e.target.closest('.book-room');
+            if (bookBtn) {
+                const roomId = bookBtn.dataset.roomId;
+                const hotelId = bookBtn.dataset.hotelId;
+
+                if (!roomId || !hotelId) {
+                    alert('Thiếu thông tin phòng');
+                    return;
+                }
+
+                window.location.href =
+                    `/Bookings/Create?roomId=${roomId}&hotelId=${hotelId}`;
+                return;
+            }
+
+            // ===== XEM CHI TIẾT =====
+            const detailBtn = e.target.closest('.room-detail');
+            if (detailBtn) {
+                const roomId = detailBtn.dataset.roomId;
+
+                if (!roomId) {
+                    alert('Thiếu RoomId');
+                    return;
+                }
+
+                window.location.href =
+                    `/Rooms/Details/${roomId}`;
+            }
+        });
 </script>

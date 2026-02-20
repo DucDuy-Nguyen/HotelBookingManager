@@ -1,0 +1,204 @@
+﻿@model IEnumerable<HotelBookingManager.Presentation.Models.UserManageViewModel>
+
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    :root {
+        --primary: #0d6efd;
+        --success: #198754;
+        --warning: #ffc107;
+        --danger: #dc3545;
+        --dark: #1a1a1a;
+        --gray: #6c757d;
+        --light: #f8f9fa;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    h2 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+    }
+
+    .hero-bg {
+        background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65));
+        height: 260px;
+        border-radius: 0 0 32px 32px;
+    }
+
+    .user-card {
+        border: none;
+        border-radius: 20px;
+        background: white;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .user-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+        }
+
+    .btn-rounded {
+        border-radius: 50px;
+        padding: 0.65rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .btn-rounded:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+    .badge-role {
+        padding: 0.55rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .active-badge {
+        background: var(--success);
+        color: white;
+    }
+
+    .inactive-badge {
+        background: var(--gray);
+        color: white;
+    }
+
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+    .table th, .table td {
+        vertical-align: middle;
+        text-align: center;
+    }
+</style>
+
+<!-- HERO HEADER -->
+<div class="hero-bg position-relative mb-5">
+    <div class="container h-100 d-flex flex-column justify-content-center text-white text-center px-4">
+        <h1 class="display-5 fw-bold mb-2">Quản lý người dùng</h1>
+        <p class="lead opacity-75 mb-0">Quản trị hệ thống người dùng</p>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container pb-5">
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center py-5 rounded-4 shadow-sm">
+            <i class="bi bi-people fs-1 mb-3 opacity-75 d-block"></i>
+            <h4 class="fw-bold">Chưa có người dùng nào trong hệ thống</h4>
+            <p class="text-muted mb-4">Hãy thêm người dùng đầu tiên để bắt đầu quản lý!</p>
+            <a asp-action="Create" class="btn btn-primary btn-lg btn-rounded shadow">
+                <i class="bi bi-plus-lg me-1"></i> Thêm người dùng mới
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive rounded-4 shadow-sm overflow-hidden">
+            <table class="table table-hover table-borderless align-middle mb-0">
+                <thead class="bg-dark text-white text-center">
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Role</th>
+                        <th>Khách sạn</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        var roleName = u.RoleId switch
+                        {
+                            1 => "Admin",
+                            2 => "Staff",
+                            3 => "Customer",
+                            _ => "Unknown"
+                        };
+                        var hotelDisplay = u.RoleId == 3 ? "Không có quyền" :
+                        (!u.HotelId.HasValue || u.HotelId == 0) ? "Chưa gán khách sạn" :
+                        (!string.IsNullOrEmpty(u.HotelName) ? u.HotelName : $"Hotel #{u.HotelId}");
+
+                        <tr>
+                            <td class="fw-bold text-primary">@u.UserId</td>
+                            <td>@u.FullName</td>
+                            <td>@u.Email</td>
+                            <td>@(u.PhoneNumber ?? "N/A")</td>
+
+                            <td>
+                                @if (u.RoleId == 1)
+                                {
+                                    <span class="badge-role bg-danger">@roleName</span>
+                                }
+                                else if (u.RoleId == 2)
+                                {
+                                    <span class="badge-role bg-warning text-dark">@roleName</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-role bg-info">@roleName</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (u.RoleId == 3)
+                                {
+                                    <span class="badge-role bg-secondary">Không có quyền</span>
+                                }
+                                else if (!u.HotelId.HasValue || u.HotelId == 0)
+                                {
+                                    <span class="badge-role bg-warning text-dark">Chưa gán khách sạn</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-role bg-success">@hotelDisplay</span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                <span class="badge-role @(u.IsActive ? "active-badge" : "inactive-badge")">
+                                    @(u.IsActive ? "Hoạt động" : "Khoá")
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a asp-action="Edit" asp-route-id="@u.UserId"
+                                       class="btn btn-outline-warning btn-sm btn-rounded hover-lift"
+                                       title="Sửa thông tin người dùng @u.FullName">
+                                        <i class="bi bi-pencil"></i> Sửa
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@u.UserId"
+                                       class="btn btn-outline-danger btn-sm btn-rounded hover-lift"
+                                       onclick="return confirm('Xóa vĩnh viễn người dùng @u.FullName?')"
+                                       title="Xóa người dùng">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

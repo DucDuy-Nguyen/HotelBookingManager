@@ -12,6 +12,9 @@ namespace HotelBookingManager.BusinessObjects.DTO
         public string? PhoneNumber { get; set; }
         public int? RoleId { get; set; }
         public int? HotelId { get; set; }   // <-- THÊM DÒNG NÀY
+        public string? HotelName { get; set; }   // <-- THÊM
+        public bool IsActive { get; set; }
+
     }
 
 }
